@@ -25,101 +25,75 @@ package de.mirkoruether.mbconfigurator.pojo;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import java.io.Serializable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class VehicleClass implements Serializable
+public class PhysicalSize
 {
-    @SerializedName("classId")
+    @SerializedName("value")
     @Expose
-    private String classId;
-    @SerializedName("className")
+    private double value;
+    @SerializedName("unit")
     @Expose
-    private String className;
-    @SerializedName("_links")
-    @Expose
-    private Links links;
-    private final static long serialVersionUID = 3867732713396545118L;
+    private String unit;
+    private final static long serialVersionUID = 1646136113862352600L;
 
     /**
      * No args constructor for use in serialization
      *
      */
-    public VehicleClass()
+    public PhysicalSize()
     {
     }
 
     /**
      *
-     * @param classId
-     * @param links
-     * @param className
+     * @param unit
+     * @param value
      */
-    public VehicleClass(String classId, String className, Links links)
+    public PhysicalSize(double value, String unit)
     {
         super();
-        this.classId = classId;
-        this.className = className;
-        this.links = links;
+        this.value = value;
+        this.unit = unit;
     }
 
-    public String getClassId()
+    public double getValue()
     {
-        return classId;
+        return value;
     }
 
-    public void setClassId(String classId)
+    public void setValue(double value)
     {
-        this.classId = classId;
+        this.value = value;
     }
 
-    public VehicleClass withClassId(String classId)
+    public PhysicalSize withValue(double value)
     {
-        this.classId = classId;
+        this.value = value;
         return this;
     }
 
-    public String getClassName()
+    public String getUnit()
     {
-        return className;
+        return unit;
     }
 
-    public void setClassName(String className)
+    public void setUnit(String unit)
     {
-        this.className = className;
+        this.unit = unit;
     }
 
-    public VehicleClass withClassName(String className)
+    public PhysicalSize withUnit(String unit)
     {
-        this.className = className;
-        return this;
-    }
-
-    public Links getLinks()
-    {
-        return links;
-    }
-
-    public void setLinks(Links links)
-    {
-        this.links = links;
-    }
-
-    public VehicleClass withLinks(Links links)
-    {
-        this.links = links;
+        this.unit = unit;
         return this;
     }
 
     @Override
     public int hashCode()
     {
-        return new HashCodeBuilder()
-                .append(classId)
-                .append(links)
-                .append(className)
-                .toHashCode();
+        return new HashCodeBuilder().append(unit).append(value).toHashCode();
     }
 
     @Override
@@ -129,15 +103,11 @@ public class VehicleClass implements Serializable
         {
             return true;
         }
-        if((other instanceof VehicleClass) == false)
+        if((other instanceof PhysicalSize) == false)
         {
             return false;
         }
-        VehicleClass rhs = ((VehicleClass)other);
-        return new EqualsBuilder()
-                .append(classId, rhs.classId)
-                .append(links, rhs.links)
-                .append(className, rhs.className)
-                .isEquals();
+        PhysicalSize rhs = ((PhysicalSize)other);
+        return new EqualsBuilder().append(unit, rhs.unit).append(value, rhs.value).isEquals();
     }
 }

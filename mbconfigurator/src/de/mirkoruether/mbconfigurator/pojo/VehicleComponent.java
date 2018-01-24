@@ -73,6 +73,10 @@ public class VehicleComponent implements Serializable
     @SerializedName("includedComponents")
     @Expose
     private IncludedComponents includedComponents;
+    @SerializedName("_links")
+    @Expose
+    private Links links;
+
     private final static long serialVersionUID = -5612570182374988247L;
 
     /**
@@ -340,6 +344,22 @@ public class VehicleComponent implements Serializable
     public VehicleComponent withIncludedComponents(IncludedComponents includedComponents)
     {
         this.includedComponents = includedComponents;
+        return this;
+    }
+
+    public Links getLinks()
+    {
+        return links;
+    }
+
+    public void setLinks(Links links)
+    {
+        this.links = links;
+    }
+
+    public VehicleComponent withLinks(Links links)
+    {
+        this.links = links;
         return this;
     }
 

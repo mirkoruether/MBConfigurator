@@ -29,97 +29,94 @@ import java.io.Serializable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class VehicleClass implements Serializable
+public class Transmission implements Serializable
 {
-    @SerializedName("classId")
+
+    @SerializedName("name")
     @Expose
-    private String classId;
-    @SerializedName("className")
+    private String name;
+    @SerializedName("code")
     @Expose
-    private String className;
-    @SerializedName("_links")
+    private String code;
+    @SerializedName("codeType")
     @Expose
-    private Links links;
-    private final static long serialVersionUID = 3867732713396545118L;
+    private String codeType;
+    private final static long serialVersionUID = -864842347766603100L;
 
     /**
      * No args constructor for use in serialization
      *
      */
-    public VehicleClass()
+    public Transmission()
     {
     }
 
     /**
      *
-     * @param classId
-     * @param links
-     * @param className
+     * @param name
+     * @param codeType
+     * @param code
      */
-    public VehicleClass(String classId, String className, Links links)
+    public Transmission(String name, String code, String codeType)
     {
         super();
-        this.classId = classId;
-        this.className = className;
-        this.links = links;
+        this.name = name;
+        this.code = code;
+        this.codeType = codeType;
     }
 
-    public String getClassId()
+    public String getName()
     {
-        return classId;
+        return name;
     }
 
-    public void setClassId(String classId)
+    public void setName(String name)
     {
-        this.classId = classId;
+        this.name = name;
     }
 
-    public VehicleClass withClassId(String classId)
+    public Transmission withName(String name)
     {
-        this.classId = classId;
+        this.name = name;
         return this;
     }
 
-    public String getClassName()
+    public String getCode()
     {
-        return className;
+        return code;
     }
 
-    public void setClassName(String className)
+    public void setCode(String code)
     {
-        this.className = className;
+        this.code = code;
     }
 
-    public VehicleClass withClassName(String className)
+    public Transmission withCode(String code)
     {
-        this.className = className;
+        this.code = code;
         return this;
     }
 
-    public Links getLinks()
+    public String getCodeType()
     {
-        return links;
+        return codeType;
     }
 
-    public void setLinks(Links links)
+    public void setCodeType(String codeType)
     {
-        this.links = links;
+        this.codeType = codeType;
     }
 
-    public VehicleClass withLinks(Links links)
+    public Transmission withCodeType(String codeType)
     {
-        this.links = links;
+        this.codeType = codeType;
         return this;
     }
 
     @Override
     public int hashCode()
     {
-        return new HashCodeBuilder()
-                .append(classId)
-                .append(links)
-                .append(className)
-                .toHashCode();
+        return new HashCodeBuilder().append(name).append(codeType).append(code).toHashCode();
     }
 
     @Override
@@ -129,15 +126,12 @@ public class VehicleClass implements Serializable
         {
             return true;
         }
-        if((other instanceof VehicleClass) == false)
+        if((other instanceof Transmission) == false)
         {
             return false;
         }
-        VehicleClass rhs = ((VehicleClass)other);
-        return new EqualsBuilder()
-                .append(classId, rhs.classId)
-                .append(links, rhs.links)
-                .append(className, rhs.className)
-                .isEquals();
+        Transmission rhs = ((Transmission)other);
+        return new EqualsBuilder().append(name, rhs.name).append(codeType, rhs.codeType).append(code, rhs.code).isEquals();
     }
+
 }

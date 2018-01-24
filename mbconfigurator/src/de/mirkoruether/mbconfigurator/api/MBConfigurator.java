@@ -27,7 +27,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import de.mirkoruether.mbconfigurator.pojo.IncludedComponents;
+import de.mirkoruether.mbconfigurator.pojo.Links;
 import de.mirkoruether.mbconfigurator.pojo.Market;
+import de.mirkoruether.mbconfigurator.pojo.Selectibles;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -52,6 +54,9 @@ public class MBConfigurator
 
             GSON = new GsonBuilder()
                     .registerTypeAdapter(IncludedComponents.class, new IncludedComponents.Deserializer())
+                    .registerTypeAdapter(Selectibles.class, new Selectibles.Deserializer())
+                    .registerTypeAdapter(Links.class, new Links.Deserializer())
+                    .registerTypeAdapter(Links.class, new Links.Serializer())
                     .setPrettyPrinting()
                     .setLenient()
                     .create();

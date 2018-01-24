@@ -141,69 +141,6 @@ public class Selectibles implements Serializable
         return new EqualsBuilder().append(componentCategories, rhs.componentCategories).append(links, rhs.links).append(vehicleComponents, rhs.vehicleComponents).isEquals();
     }
 
-    public static class Links implements Serializable
-    {
-        @SerializedName("self")
-        @Expose
-        private String self;
-        private final static long serialVersionUID = -8909689652298173948L;
-
-        /**
-         * No args constructor for use in serialization
-         *
-         */
-        public Links()
-        {
-        }
-
-        /**
-         *
-         * @param self
-         */
-        public Links(String self)
-        {
-            super();
-            this.self = self;
-        }
-
-        public String getSelf()
-        {
-            return self;
-        }
-
-        public void setSelf(String self)
-        {
-            this.self = self;
-        }
-
-        public Links withSelf(String self)
-        {
-            this.self = self;
-            return this;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return new HashCodeBuilder().append(self).toHashCode();
-        }
-
-        @Override
-        public boolean equals(Object other)
-        {
-            if(other == this)
-            {
-                return true;
-            }
-            if((other instanceof Links) == false)
-            {
-                return false;
-            }
-            Links rhs = ((Links)other);
-            return new EqualsBuilder().append(self, rhs.self).isEquals();
-        }
-    }
-
     public static class Deserializer implements com.google.gson.JsonDeserializer<Selectibles>
     {
         @Override
