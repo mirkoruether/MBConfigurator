@@ -31,7 +31,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class VehicleComponent implements Serializable
 {
-
     @SerializedName("id")
     @Expose
     private String id;
@@ -41,6 +40,9 @@ public class VehicleComponent implements Serializable
     @SerializedName("name")
     @Expose
     private String name;
+    @SerializedName("description")
+    @Expose
+    private String description;
     @SerializedName("code")
     @Expose
     private String code;
@@ -68,10 +70,10 @@ public class VehicleComponent implements Serializable
     @SerializedName("pseudoCode")
     @Expose
     private boolean pseudoCode;
-    @SerializedName("_links")
+    @SerializedName("includedComponents")
     @Expose
-    private Links links;
-    private final static long serialVersionUID = 1396339971632000948L;
+    private IncludedComponents includedComponents;
+    private final static long serialVersionUID = -5612570182374988247L;
 
     /**
      * No args constructor for use in serialization
@@ -83,26 +85,28 @@ public class VehicleComponent implements Serializable
 
     /**
      *
-     * @param id
-     * @param selected
-     * @param priceInformation
      * @param standard
-     * @param pseudoCode
-     * @param hidden
-     * @param componentSortId
-     * @param name
-     * @param links
-     * @param codeType
      * @param code
+     * @param codeType
      * @param fixed
      * @param componentType
+     * @param includedComponents
+     * @param id
+     * @param priceInformation
+     * @param selected
+     * @param pseudoCode
+     * @param componentSortId
+     * @param description
+     * @param hidden
+     * @param name
      */
-    public VehicleComponent(String id, int componentSortId, String name, String code, String codeType, String componentType, PriceInformation priceInformation, boolean standard, boolean selected, boolean fixed, boolean hidden, boolean pseudoCode, Links links)
+    public VehicleComponent(String id, int componentSortId, String name, String description, String code, String codeType, String componentType, PriceInformation priceInformation, boolean standard, boolean selected, boolean fixed, boolean hidden, boolean pseudoCode, IncludedComponents includedComponents)
     {
         super();
         this.id = id;
         this.componentSortId = componentSortId;
         this.name = name;
+        this.description = description;
         this.code = code;
         this.codeType = codeType;
         this.componentType = componentType;
@@ -112,7 +116,7 @@ public class VehicleComponent implements Serializable
         this.fixed = fixed;
         this.hidden = hidden;
         this.pseudoCode = pseudoCode;
-        this.links = links;
+        this.includedComponents = includedComponents;
     }
 
     public String getId()
@@ -160,6 +164,22 @@ public class VehicleComponent implements Serializable
     public VehicleComponent withName(String name)
     {
         this.name = name;
+        return this;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
+    public VehicleComponent withDescription(String description)
+    {
+        this.description = description;
         return this;
     }
 
@@ -307,19 +327,19 @@ public class VehicleComponent implements Serializable
         return this;
     }
 
-    public Links getLinks()
+    public IncludedComponents getIncludedComponents()
     {
-        return links;
+        return includedComponents;
     }
 
-    public void setLinks(Links links)
+    public void setIncludedComponents(IncludedComponents includedComponents)
     {
-        this.links = links;
+        this.includedComponents = includedComponents;
     }
 
-    public VehicleComponent withLinks(Links links)
+    public VehicleComponent withIncludedComponents(IncludedComponents includedComponents)
     {
-        this.links = links;
+        this.includedComponents = includedComponents;
         return this;
     }
 
@@ -328,16 +348,15 @@ public class VehicleComponent implements Serializable
     {
         return new HashCodeBuilder()
                 .append(standard)
-                .append(links)
                 .append(codeType)
-                .append(code)
-                .append(fixed)
+                .append(code).append(fixed)
                 .append(componentType)
-                .append(id)
-                .append(selected)
+                .append(includedComponents)
+                .append(id).append(selected)
                 .append(priceInformation)
                 .append(pseudoCode)
                 .append(hidden)
+                .append(description)
                 .append(componentSortId)
                 .append(name)
                 .toHashCode();
@@ -357,86 +376,18 @@ public class VehicleComponent implements Serializable
         VehicleComponent rhs = ((VehicleComponent)other);
         return new EqualsBuilder()
                 .append(standard, rhs.standard)
-                .append(links, rhs.links)
                 .append(codeType, rhs.codeType)
                 .append(code, rhs.code)
                 .append(fixed, rhs.fixed)
                 .append(componentType, rhs.componentType)
-                .append(id, rhs.id)
-                .append(selected, rhs.selected)
+                .append(includedComponents, rhs.includedComponents)
+                .append(id, rhs.id).append(selected, rhs.selected)
                 .append(priceInformation, rhs.priceInformation)
                 .append(pseudoCode, rhs.pseudoCode)
                 .append(hidden, rhs.hidden)
+                .append(description, rhs.description)
                 .append(componentSortId, rhs.componentSortId)
                 .append(name, rhs.name)
                 .isEquals();
-    }
-
-    public static class Links implements Serializable
-    {
-
-        @SerializedName("image")
-        @Expose
-        private String image;
-        private final static long serialVersionUID = -958189651559036877L;
-
-        /**
-         * No args constructor for use in serialization
-         *
-         */
-        public Links()
-        {
-        }
-
-        /**
-         *
-         * @param image
-         */
-        public Links(String image)
-        {
-            super();
-            this.image = image;
-        }
-
-        public String getImage()
-        {
-            return image;
-        }
-
-        public void setImage(String image)
-        {
-            this.image = image;
-        }
-
-        public Links withImage(String image)
-        {
-            this.image = image;
-            return this;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return new HashCodeBuilder()
-                    .append(image)
-                    .toHashCode();
-        }
-
-        @Override
-        public boolean equals(Object other)
-        {
-            if(other == this)
-            {
-                return true;
-            }
-            if((other instanceof Links) == false)
-            {
-                return false;
-            }
-            Links rhs = ((Links)other);
-            return new EqualsBuilder()
-                    .append(image, rhs.image)
-                    .isEquals();
-        }
     }
 }

@@ -23,9 +23,11 @@ SOFTWARE.
  */
 package de.mirkoruether.mbconfigurator.api;
 
-import de.mirkoruether.mbconfigurator.pojo.Market;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
+import de.mirkoruether.mbconfigurator.pojo.IncludedComponents;
+import de.mirkoruether.mbconfigurator.pojo.Market;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -40,13 +42,19 @@ public class MBConfigurator
 {
     public static final String BASE_URL = "https://api.mercedes-benz.com/configurator/v1";
     public static final String APIKEY;
-    public static Gson GSON = new Gson();
+    public static final Gson GSON;
 
     static
     {
         try
         {
             APIKEY = Files.readAllLines(Paths.get("APIKEY")).get(0);
+
+            GSON = new GsonBuilder()
+                    .registerTypeAdapter(IncludedComponents.class, new IncludedComponents.Deserializer())
+                    .setPrettyPrinting()
+                    .setLenient()
+                    .create();
         }
         catch(IOException ex)
         {
