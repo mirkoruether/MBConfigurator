@@ -36,29 +36,40 @@ import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class IncludedComponents implements Serializable
+public class Selectibles implements Serializable
 {
-    private final static long serialVersionUID = 5805894384937018412L;
 
     @SerializedName("vehicleComponents")
     @Expose
     private List<VehicleComponent> vehicleComponents;
     @SerializedName("componentCategories")
     @Expose
-    private List<ComponentCategory> componentCategories;
+    private List<ComponentCategory> componentCategories = null;
+    @SerializedName("_links")
+    @Expose
+    private Links links;
+    private final static long serialVersionUID = 6543315045753687795L;
 
     /**
      * No args constructor for use in serialization
      *
      */
-    public IncludedComponents()
+    public Selectibles()
     {
     }
 
-    public IncludedComponents(List<VehicleComponent> vehicleComponents, List<ComponentCategory> componentCategories)
+    /**
+     *
+     * @param componentCategories
+     * @param links
+     * @param vehicleComponents
+     */
+    public Selectibles(List<VehicleComponent> vehicleComponents, List<ComponentCategory> componentCategories, Links links)
     {
+        super();
         this.vehicleComponents = vehicleComponents;
         this.componentCategories = componentCategories;
+        this.links = links;
     }
 
     public List<VehicleComponent> getVehicleComponents()
@@ -71,7 +82,7 @@ public class IncludedComponents implements Serializable
         this.vehicleComponents = vehicleComponents;
     }
 
-    public IncludedComponents withVehicleComponents(List<VehicleComponent> vehicleComponents)
+    public Selectibles withVehicleComponents(List<VehicleComponent> vehicleComponents)
     {
         this.vehicleComponents = vehicleComponents;
         return this;
@@ -87,19 +98,32 @@ public class IncludedComponents implements Serializable
         this.componentCategories = componentCategories;
     }
 
-    public IncludedComponents withComponentCategories(List<ComponentCategory> componentCategories)
+    public Selectibles withComponentCategories(List<ComponentCategory> componentCategories)
     {
         this.componentCategories = componentCategories;
+        return this;
+    }
+
+    public Links getLinks()
+    {
+        return links;
+    }
+
+    public void setLinks(Links links)
+    {
+        this.links = links;
+    }
+
+    public Selectibles withLinks(Links links)
+    {
+        this.links = links;
         return this;
     }
 
     @Override
     public int hashCode()
     {
-        return new HashCodeBuilder()
-                .append(componentCategories)
-                .append(vehicleComponents)
-                .toHashCode();
+        return new HashCodeBuilder().append(componentCategories).append(links).append(vehicleComponents).toHashCode();
     }
 
     @Override
@@ -109,27 +133,89 @@ public class IncludedComponents implements Serializable
         {
             return true;
         }
-        if((other instanceof IncludedComponents) == false)
+        if((other instanceof Selectibles) == false)
         {
             return false;
         }
-        IncludedComponents rhs = ((IncludedComponents)other);
-        return new EqualsBuilder()
-                .append(componentCategories, rhs.componentCategories)
-                .append(vehicleComponents, rhs.vehicleComponents)
-                .isEquals();
+        Selectibles rhs = ((Selectibles)other);
+        return new EqualsBuilder().append(componentCategories, rhs.componentCategories).append(links, rhs.links).append(vehicleComponents, rhs.vehicleComponents).isEquals();
     }
 
-    public static class Deserializer implements com.google.gson.JsonDeserializer<IncludedComponents>
+    public static class Links implements Serializable
+    {
+        @SerializedName("self")
+        @Expose
+        private String self;
+        private final static long serialVersionUID = -8909689652298173948L;
+
+        /**
+         * No args constructor for use in serialization
+         *
+         */
+        public Links()
+        {
+        }
+
+        /**
+         *
+         * @param self
+         */
+        public Links(String self)
+        {
+            super();
+            this.self = self;
+        }
+
+        public String getSelf()
+        {
+            return self;
+        }
+
+        public void setSelf(String self)
+        {
+            this.self = self;
+        }
+
+        public Links withSelf(String self)
+        {
+            this.self = self;
+            return this;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return new HashCodeBuilder().append(self).toHashCode();
+        }
+
+        @Override
+        public boolean equals(Object other)
+        {
+            if(other == this)
+            {
+                return true;
+            }
+            if((other instanceof Links) == false)
+            {
+                return false;
+            }
+            Links rhs = ((Links)other);
+            return new EqualsBuilder().append(self, rhs.self).isEquals();
+        }
+    }
+
+    public static class Deserializer implements com.google.gson.JsonDeserializer<Selectibles>
     {
         @Override
-        public IncludedComponents deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
+        public Selectibles deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
         {
-            IncludedComponents result = new IncludedComponents();
+            Selectibles result = new Selectibles();
             JsonObject obj = json.getAsJsonObject();
 
             result.setComponentCategories(GsonUtils.getListFromArray(obj.get("componentCategories"), context, ComponentCategory.class));
             result.setVehicleComponents(GsonUtils.getListFromObjectList(obj.get("vehicleComponents"), context, VehicleComponent.class));
+
+            result.setLinks(context.deserialize(obj.get("_links"), Links.class));
 
             return result;
         }

@@ -71,7 +71,9 @@ public class TestJson extends javax.swing.JFrame
         {
             Class<?> clazz = Class.forName("de.mirkoruether.mbconfigurator.pojo." + classTxt.getText());
             Object o = MBConfigurator.GSON.fromJson(jsonTxt.getText(), clazz);
-            JOptionPane.showMessageDialog(null, MBConfigurator.GSON.toJson(o), "Ergebnis", JOptionPane.INFORMATION_MESSAGE);
+            String out = MBConfigurator.GSON.toJson(o);
+            System.out.println(out);
+            JOptionPane.showMessageDialog(null, out, "Ergebnis", JOptionPane.INFORMATION_MESSAGE);
         }
         catch(Exception ex)
         {

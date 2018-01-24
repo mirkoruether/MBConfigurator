@@ -46,7 +46,7 @@ public class ComponentCategory implements Serializable
     private String cardinality;
     @SerializedName("subcategories")
     @Expose
-    private List<String> subcategories = null;
+    private List<ComponentCategory> subcategories = null;
     @SerializedName("componentIds")
     @Expose
     private List<String> componentIds = null;
@@ -69,7 +69,7 @@ public class ComponentCategory implements Serializable
      * @param subcategories
      * @param cardinality
      */
-    public ComponentCategory(String categoryId, int categorySortId, String categoryName, String cardinality, List<String> subcategories, List<String> componentIds)
+    public ComponentCategory(String categoryId, int categorySortId, String categoryName, String cardinality, List<ComponentCategory> subcategories, List<String> componentIds)
     {
         super();
         this.categoryId = categoryId;
@@ -144,17 +144,17 @@ public class ComponentCategory implements Serializable
         return this;
     }
 
-    public List<String> getSubcategories()
+    public List<ComponentCategory> getSubcategories()
     {
         return subcategories;
     }
 
-    public void setSubcategories(List<String> subcategories)
+    public void setSubcategories(List<ComponentCategory> subcategories)
     {
         this.subcategories = subcategories;
     }
 
-    public ComponentCategory withSubcategories(List<String> subcategories)
+    public ComponentCategory withSubcategories(List<ComponentCategory> subcategories)
     {
         this.subcategories = subcategories;
         return this;
