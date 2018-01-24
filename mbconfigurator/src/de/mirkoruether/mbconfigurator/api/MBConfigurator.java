@@ -26,10 +26,14 @@ package de.mirkoruether.mbconfigurator.api;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
+import de.mirkoruether.mbconfigurator.pojo.Configuration;
 import de.mirkoruether.mbconfigurator.pojo.IncludedComponents;
 import de.mirkoruether.mbconfigurator.pojo.Links;
 import de.mirkoruether.mbconfigurator.pojo.Market;
-import de.mirkoruether.mbconfigurator.pojo.Selectibles;
+import de.mirkoruether.mbconfigurator.pojo.Model;
+import de.mirkoruether.mbconfigurator.pojo.Selectables;
+import de.mirkoruether.mbconfigurator.pojo.VehicleBody;
+import de.mirkoruether.mbconfigurator.pojo.VehicleClass;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -54,7 +58,7 @@ public class MBConfigurator
 
             GSON = new GsonBuilder()
                     .registerTypeAdapter(IncludedComponents.class, new IncludedComponents.Deserializer())
-                    .registerTypeAdapter(Selectibles.class, new Selectibles.Deserializer())
+                    .registerTypeAdapter(Selectables.class, new Selectables.Deserializer())
                     .registerTypeAdapter(Links.class, new Links.Deserializer())
                     .registerTypeAdapter(Links.class, new Links.Serializer())
                     .setPrettyPrinting()
@@ -77,6 +81,55 @@ public class MBConfigurator
         return GSON.fromJson(response, Market[].class);
     }
 
+    public static VehicleBody[] getVehicleBodies(String market, String productGroups, String classId)
+    {
+        String response = request("markets/" + market + "/bodies",
+                                  "productGroups", productGroups,
+                                  "classId", classId);
+        return GSON.fromJson(response, VehicleBody[].class);
+    }
+
+    public static VehicleClass[] getVehicleClasses(String market, String productGroups, String bodyId)
+    {
+        String response = request("markets/" + market + "/classes",
+                                  "productGroups", productGroups,
+                                  "bodyId", bodyId);
+        return GSON.fromJson(response, VehicleClass[].class);
+    }
+
+    public static Model[] getModels(String market, String productGroups, String classId, String bodyId)
+    {
+        String response = request("markets/" + market + "/models",
+                                  "productGroups", productGroups,
+                                  "classId", classId,
+                                  "bodyId", bodyId);
+        return GSON.fromJson(response, Model[].class);
+    }
+
+    public static Configuration getInitialConfiguration(String market, String modelId)
+    {
+        String response = request("markets/" + market + "/models/" + modelId + "/configurations/initial");
+        return GSON.fromJson(response, Configuration.class);
+    }
+
+    public static Selectables getSelectibles(String market, String modelId, String configurationId)
+    {
+        String response = request("markets/" + market + "/models/" + modelId + "/configurations/" + configurationId + "/selectables");
+        return GSON.fromJson(response, Selectables.class);
+    }
+
+    public static <T> T fromLink(Links links, String linkKey, Class<T> clazz)
+    {
+        String response = getResponse(links.getLink(linkKey));
+        return GSON.fromJson(response, clazz);
+    }
+
+    public static <T> T fromLink(String link, Class<T> clazz)
+    {
+        String response = getResponse(link);
+        return GSON.fromJson(response, clazz);
+    }
+
     public static String request(String path, String... parameters)
     {
         if(parameters.length % 2 != 0)
@@ -87,7 +140,10 @@ public class MBConfigurator
         Map<String, String> p = new HashMap<>(parameters.length / 2);
         for(int i = 0; i < parameters.length; i += 2)
         {
-            p.put(parameters[i], parameters[i + 1]);
+            String key = parameters[i];
+            String value = parameters[i + 1];
+            if(key != null && value != null)
+                p.put(key, value);
         }
 
         return request(path, p);
@@ -99,7 +155,8 @@ public class MBConfigurator
         try
         {
             Fault f = GSON.fromJson(response, Fault.class);
-            throw new ApiFaultException(f.getFaultstring());
+            if(f.getFaultstring() != null)
+                throw new ApiFaultException(f.getFaultstring());
         }
         catch(JsonParseException ex)
         {

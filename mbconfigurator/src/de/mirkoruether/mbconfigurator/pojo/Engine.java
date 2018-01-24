@@ -31,7 +31,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class Engine implements Serializable
 {
-
     @SerializedName("fuelType")
     @Expose
     private String fuelType;
@@ -53,6 +52,12 @@ public class Engine implements Serializable
     @SerializedName("powerKw")
     @Expose
     private PhysicalSize powerKw;
+    @SerializedName("powerHybridExtensionHp")
+    @Expose
+    private PhysicalSize powerHybridExtensionHp;
+    @SerializedName("powerHybridExtensionKw")
+    @Expose
+    private PhysicalSize powerHybridExtensionKw;
     @SerializedName("cylinder")
     @Expose
     private String cylinder;
@@ -81,13 +86,14 @@ public class Engine implements Serializable
      * @param engineConcept
      * @param alternativeFuelType
      * @param cylinder
+     * @param powerHybridExtensionHp
+     * @param powerHybridExtensionKw
      * @param capacity
      * @param powerHp
      * @param powerKw
      */
-    public Engine(String fuelType, String alternativeFuelType, String engineConcept, String driveConcept, FuelEconomy fuelEconomy, PhysicalSize powerHp, PhysicalSize powerKw, String cylinder, PhysicalSize capacity, String emissionStandard)
+    public Engine(String fuelType, String alternativeFuelType, String engineConcept, String driveConcept, FuelEconomy fuelEconomy, PhysicalSize powerHp, PhysicalSize powerKw, PhysicalSize powerHybridExtensionHp, PhysicalSize powerHybridExtensionKw, String cylinder, PhysicalSize capacity, String emissionStandard)
     {
-        super();
         this.fuelType = fuelType;
         this.alternativeFuelType = alternativeFuelType;
         this.engineConcept = engineConcept;
@@ -95,6 +101,8 @@ public class Engine implements Serializable
         this.fuelEconomy = fuelEconomy;
         this.powerHp = powerHp;
         this.powerKw = powerKw;
+        this.powerHybridExtensionHp = powerHybridExtensionHp;
+        this.powerHybridExtensionKw = powerHybridExtensionKw;
         this.cylinder = cylinder;
         this.capacity = capacity;
         this.emissionStandard = emissionStandard;
@@ -212,6 +220,38 @@ public class Engine implements Serializable
         return this;
     }
 
+    public PhysicalSize getPowerHybridExtensionHp()
+    {
+        return powerHybridExtensionHp;
+    }
+
+    public void setPowerHybridExtensionHp(PhysicalSize powerHybridExtensionHp)
+    {
+        this.powerHybridExtensionHp = powerHybridExtensionHp;
+    }
+
+    public Engine withPowerHybridExtensionHp(PhysicalSize powerHybridExtensionHp)
+    {
+        this.powerHybridExtensionHp = powerHybridExtensionHp;
+        return this;
+    }
+
+    public PhysicalSize getPowerHybridExtensionKw()
+    {
+        return powerHybridExtensionKw;
+    }
+
+    public void setPowerHybridExtensionKw(PhysicalSize powerHybridExtensionKw)
+    {
+        this.powerHybridExtensionKw = powerHybridExtensionKw;
+    }
+
+    public Engine withPowerHybridExtensionKw(PhysicalSize powerHybridExtensionKw)
+    {
+        this.powerHybridExtensionKw = powerHybridExtensionKw;
+        return this;
+    }
+
     public String getCylinder()
     {
         return cylinder;
@@ -263,7 +303,20 @@ public class Engine implements Serializable
     @Override
     public int hashCode()
     {
-        return new HashCodeBuilder().append(fuelEconomy).append(emissionStandard).append(fuelType).append(driveConcept).append(engineConcept).append(alternativeFuelType).append(cylinder).append(capacity).append(powerHp).append(powerKw).toHashCode();
+        return new HashCodeBuilder()
+                .append(fuelEconomy)
+                .append(emissionStandard)
+                .append(fuelType)
+                .append(driveConcept)
+                .append(engineConcept)
+                .append(alternativeFuelType)
+                .append(cylinder)
+                .append(capacity)
+                .append(powerHp)
+                .append(powerKw)
+                .append(powerHybridExtensionHp)
+                .append(powerHybridExtensionKw)
+                .toHashCode();
     }
 
     @Override
@@ -278,7 +331,20 @@ public class Engine implements Serializable
             return false;
         }
         Engine rhs = ((Engine)other);
-        return new EqualsBuilder().append(fuelEconomy, rhs.fuelEconomy).append(emissionStandard, rhs.emissionStandard).append(fuelType, rhs.fuelType).append(driveConcept, rhs.driveConcept).append(engineConcept, rhs.engineConcept).append(alternativeFuelType, rhs.alternativeFuelType).append(cylinder, rhs.cylinder).append(capacity, rhs.capacity).append(powerHp, rhs.powerHp).append(powerKw, rhs.powerKw).isEquals();
+        return new EqualsBuilder()
+                .append(fuelEconomy, rhs.fuelEconomy)
+                .append(emissionStandard, rhs.emissionStandard)
+                .append(fuelType, rhs.fuelType)
+                .append(driveConcept, rhs.driveConcept)
+                .append(engineConcept, rhs.engineConcept)
+                .append(alternativeFuelType, rhs.alternativeFuelType)
+                .append(cylinder, rhs.cylinder)
+                .append(capacity, rhs.capacity)
+                .append(powerHp, rhs.powerHp)
+                .append(powerKw, rhs.powerKw)
+                .append(powerHybridExtensionHp, rhs.powerHybridExtensionHp)
+                .append(powerHybridExtensionKw, rhs.powerHybridExtensionKw)
+                .isEquals();
     }
 
 }

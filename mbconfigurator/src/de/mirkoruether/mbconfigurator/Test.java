@@ -24,13 +24,23 @@ SOFTWARE.
 package de.mirkoruether.mbconfigurator;
 
 import de.mirkoruether.mbconfigurator.api.MBConfigurator;
+import de.mirkoruether.mbconfigurator.pojo.Configuration;
 import de.mirkoruether.mbconfigurator.pojo.Market;
+import de.mirkoruether.mbconfigurator.pojo.Model;
+import de.mirkoruether.mbconfigurator.pojo.Selectables;
+import de.mirkoruether.mbconfigurator.pojo.VehicleBody;
+import de.mirkoruether.mbconfigurator.pojo.VehicleClass;
 
 public class Test
 {
     public static void main(String[] args)
     {
         Market[] markets = MBConfigurator.getMarkets("DE");
-        System.out.println(markets.length);
+        VehicleClass[] classes = MBConfigurator.getVehicleClasses(markets[0].getMarketId(), null, null);
+        VehicleBody[] bodies = MBConfigurator.getVehicleBodies(markets[0].getMarketId(), null, classes[0].getClassId());
+        Model[] models = MBConfigurator.getModels(markets[0].getMarketId(), null, classes[0].getClassId(), bodies[0].getBodyId());
+        Configuration config = MBConfigurator.getInitialConfiguration(markets[0].getMarketId(), models[0].getModelId());
+        Selectables selectables = MBConfigurator.fromLink(config.getLinks(), "selectables", Selectables.class);
+        System.out.println(selectables.getVehicleComponents().size());
     }
 }

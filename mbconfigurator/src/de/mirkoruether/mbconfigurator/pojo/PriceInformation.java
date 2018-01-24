@@ -32,13 +32,15 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class PriceInformation implements Serializable
 {
-
     @SerializedName("price")
     @Expose
     private double price;
     @SerializedName("netPrice")
     @Expose
-    private int netPrice;
+    private double netPrice;
+    @SerializedName("instalmentPrice")
+    @Expose
+    private double instalmentPrice;
     @SerializedName("currency")
     @Expose
     private String currency;
@@ -59,16 +61,16 @@ public class PriceInformation implements Serializable
      *
      * @param price
      * @param netPrice
+     * @param instalmentPrice
      * @param taxes
      * @param currency
      */
-    public PriceInformation(double price, int netPrice, String currency, List<Tax> taxes)
+    public PriceInformation(double price, double netPrice, double instalmentPrice, String currency)
     {
-        super();
         this.price = price;
         this.netPrice = netPrice;
+        this.instalmentPrice = instalmentPrice;
         this.currency = currency;
-        this.taxes = taxes;
     }
 
     public double getPrice()
@@ -87,19 +89,35 @@ public class PriceInformation implements Serializable
         return this;
     }
 
-    public int getNetPrice()
+    public double getNetPrice()
     {
         return netPrice;
     }
 
-    public void setNetPrice(int netPrice)
+    public void setNetPrice(double netPrice)
     {
         this.netPrice = netPrice;
     }
 
-    public PriceInformation withNetPrice(int netPrice)
+    public PriceInformation withNetPrice(double netPrice)
     {
         this.netPrice = netPrice;
+        return this;
+    }
+
+    public double getInstalmentPrice()
+    {
+        return instalmentPrice;
+    }
+
+    public void setInstalmentPrice(double instalmentPrice)
+    {
+        this.instalmentPrice = instalmentPrice;
+    }
+
+    public PriceInformation withInstalmentPrice(double instalmentPrice)
+    {
+        this.instalmentPrice = instalmentPrice;
         return this;
     }
 
@@ -141,6 +159,7 @@ public class PriceInformation implements Serializable
         return new HashCodeBuilder()
                 .append(price)
                 .append(netPrice)
+                .append(instalmentPrice)
                 .append(taxes)
                 .append(currency)
                 .toHashCode();
@@ -161,6 +180,7 @@ public class PriceInformation implements Serializable
         return new EqualsBuilder()
                 .append(price, rhs.price)
                 .append(netPrice, rhs.netPrice)
+                .append(instalmentPrice, rhs.instalmentPrice)
                 .append(taxes, rhs.taxes)
                 .append(currency, rhs.currency)
                 .isEquals();

@@ -36,9 +36,8 @@ import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class Selectibles implements Serializable
+public class Selectables implements Serializable
 {
-
     @SerializedName("vehicleComponents")
     @Expose
     private List<VehicleComponent> vehicleComponents;
@@ -54,7 +53,7 @@ public class Selectibles implements Serializable
      * No args constructor for use in serialization
      *
      */
-    public Selectibles()
+    public Selectables()
     {
     }
 
@@ -64,7 +63,7 @@ public class Selectibles implements Serializable
      * @param links
      * @param vehicleComponents
      */
-    public Selectibles(List<VehicleComponent> vehicleComponents, List<ComponentCategory> componentCategories, Links links)
+    public Selectables(List<VehicleComponent> vehicleComponents, List<ComponentCategory> componentCategories, Links links)
     {
         super();
         this.vehicleComponents = vehicleComponents;
@@ -82,7 +81,7 @@ public class Selectibles implements Serializable
         this.vehicleComponents = vehicleComponents;
     }
 
-    public Selectibles withVehicleComponents(List<VehicleComponent> vehicleComponents)
+    public Selectables withVehicleComponents(List<VehicleComponent> vehicleComponents)
     {
         this.vehicleComponents = vehicleComponents;
         return this;
@@ -98,7 +97,7 @@ public class Selectibles implements Serializable
         this.componentCategories = componentCategories;
     }
 
-    public Selectibles withComponentCategories(List<ComponentCategory> componentCategories)
+    public Selectables withComponentCategories(List<ComponentCategory> componentCategories)
     {
         this.componentCategories = componentCategories;
         return this;
@@ -114,7 +113,7 @@ public class Selectibles implements Serializable
         this.links = links;
     }
 
-    public Selectibles withLinks(Links links)
+    public Selectables withLinks(Links links)
     {
         this.links = links;
         return this;
@@ -133,20 +132,20 @@ public class Selectibles implements Serializable
         {
             return true;
         }
-        if((other instanceof Selectibles) == false)
+        if((other instanceof Selectables) == false)
         {
             return false;
         }
-        Selectibles rhs = ((Selectibles)other);
+        Selectables rhs = ((Selectables)other);
         return new EqualsBuilder().append(componentCategories, rhs.componentCategories).append(links, rhs.links).append(vehicleComponents, rhs.vehicleComponents).isEquals();
     }
 
-    public static class Deserializer implements com.google.gson.JsonDeserializer<Selectibles>
+    public static class Deserializer implements com.google.gson.JsonDeserializer<Selectables>
     {
         @Override
-        public Selectibles deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
+        public Selectables deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
         {
-            Selectibles result = new Selectibles();
+            Selectables result = new Selectables();
             JsonObject obj = json.getAsJsonObject();
 
             result.setComponentCategories(GsonUtils.getListFromArray(obj.get("componentCategories"), context, ComponentCategory.class));

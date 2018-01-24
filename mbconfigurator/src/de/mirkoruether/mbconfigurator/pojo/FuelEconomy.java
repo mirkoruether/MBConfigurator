@@ -50,6 +50,15 @@ public class FuelEconomy implements Serializable
     @SerializedName("fuelConsumptionCombinedMax")
     @Expose
     private PhysicalSize fuelConsumptionCombinedMax;
+    @SerializedName("fuelConsumptionElectricity")
+    @Expose
+    private PhysicalSize fuelConsumptionElectricity;
+    @SerializedName("consumptionOfElectricityMin")
+    @Expose
+    private PhysicalSize consumptionOfElectricityMin;
+    @SerializedName("consumptionOfElectricityMax")
+    @Expose
+    private PhysicalSize consumptionOfElectricityMax;
     @SerializedName("emissionCO2Min")
     @Expose
     private PhysicalSize emissionCO2Min;
@@ -74,18 +83,23 @@ public class FuelEconomy implements Serializable
      * @param fuelConsumptionCityMin
      * @param emissionCO2Max
      * @param fuelConsumptionCombinedMin
+     * @param fuelConsumptionElectricity
+     * @param consumptionOfElectricityMin
+     * @param consumptionOfElectricityMax
      * @param fuelConsumptionCombinedMax
      * @param fuelConsumptionCityMax
      */
-    public FuelEconomy(PhysicalSize fuelConsumptionCityMin, PhysicalSize fuelConsumptionCityMax, PhysicalSize fuelConsumptionOverlandMin, PhysicalSize fuelConsumptionOverlandMax, PhysicalSize fuelConsumptionCombinedMin, PhysicalSize fuelConsumptionCombinedMax, PhysicalSize emissionCO2Min, PhysicalSize emissionCO2Max)
+    public FuelEconomy(PhysicalSize fuelConsumptionCityMin, PhysicalSize fuelConsumptionCityMax, PhysicalSize fuelConsumptionOverlandMin, PhysicalSize fuelConsumptionOverlandMax, PhysicalSize fuelConsumptionCombinedMin, PhysicalSize fuelConsumptionCombinedMax, PhysicalSize fuelConsumptionElectricity, PhysicalSize consumptionOfElectricityMin, PhysicalSize consumptionOfElectricityMax, PhysicalSize emissionCO2Min, PhysicalSize emissionCO2Max)
     {
-        super();
         this.fuelConsumptionCityMin = fuelConsumptionCityMin;
         this.fuelConsumptionCityMax = fuelConsumptionCityMax;
         this.fuelConsumptionOverlandMin = fuelConsumptionOverlandMin;
         this.fuelConsumptionOverlandMax = fuelConsumptionOverlandMax;
         this.fuelConsumptionCombinedMin = fuelConsumptionCombinedMin;
         this.fuelConsumptionCombinedMax = fuelConsumptionCombinedMax;
+        this.fuelConsumptionElectricity = fuelConsumptionElectricity;
+        this.consumptionOfElectricityMin = consumptionOfElectricityMin;
+        this.consumptionOfElectricityMax = consumptionOfElectricityMax;
         this.emissionCO2Min = emissionCO2Min;
         this.emissionCO2Max = emissionCO2Max;
     }
@@ -186,6 +200,54 @@ public class FuelEconomy implements Serializable
         return this;
     }
 
+    public PhysicalSize getFuelConsumptionElectricity()
+    {
+        return fuelConsumptionElectricity;
+    }
+
+    public void setFuelConsumptionElectricity(PhysicalSize fuelConsumptionElectricity)
+    {
+        this.fuelConsumptionElectricity = fuelConsumptionElectricity;
+    }
+
+    public FuelEconomy withFuelConsumptionElectricity(PhysicalSize fuelConsumptionElectricity)
+    {
+        this.fuelConsumptionElectricity = fuelConsumptionElectricity;
+        return this;
+    }
+
+    public PhysicalSize getConsumptionOfElectricityMin()
+    {
+        return consumptionOfElectricityMin;
+    }
+
+    public void setConsumptionOfElectricityMin(PhysicalSize consumptionOfElectricityMin)
+    {
+        this.consumptionOfElectricityMin = consumptionOfElectricityMin;
+    }
+
+    public FuelEconomy withConsumptionOfElectricityMin(PhysicalSize consumptionOfElectricityMin)
+    {
+        this.consumptionOfElectricityMin = consumptionOfElectricityMin;
+        return this;
+    }
+
+    public PhysicalSize getConsumptionOfElectricityMax()
+    {
+        return consumptionOfElectricityMax;
+    }
+
+    public void setConsumptionOfElectricityMax(PhysicalSize consumptionOfElectricityMax)
+    {
+        this.consumptionOfElectricityMax = consumptionOfElectricityMax;
+    }
+
+    public FuelEconomy withConsumptionOfElectricityMax(PhysicalSize consumptionOfElectricityMax)
+    {
+        this.consumptionOfElectricityMax = consumptionOfElectricityMax;
+        return this;
+    }
+
     public PhysicalSize getEmissionCO2Min()
     {
         return emissionCO2Min;
@@ -221,7 +283,19 @@ public class FuelEconomy implements Serializable
     @Override
     public int hashCode()
     {
-        return new HashCodeBuilder().append(emissionCO2Min).append(fuelConsumptionOverlandMin).append(fuelConsumptionOverlandMax).append(fuelConsumptionCityMin).append(emissionCO2Max).append(fuelConsumptionCombinedMin).append(fuelConsumptionCombinedMax).append(fuelConsumptionCityMax).toHashCode();
+        return new HashCodeBuilder()
+                .append(fuelConsumptionElectricity)
+                .append(emissionCO2Min)
+                .append(fuelConsumptionOverlandMin)
+                .append(consumptionOfElectricityMax)
+                .append(fuelConsumptionOverlandMax)
+                .append(fuelConsumptionCityMin)
+                .append(emissionCO2Max)
+                .append(fuelConsumptionCombinedMin)
+                .append(fuelConsumptionCombinedMax)
+                .append(fuelConsumptionCityMax)
+                .append(consumptionOfElectricityMin)
+                .toHashCode();
     }
 
     @Override
@@ -236,7 +310,18 @@ public class FuelEconomy implements Serializable
             return false;
         }
         FuelEconomy rhs = ((FuelEconomy)other);
-        return new EqualsBuilder().append(emissionCO2Min, rhs.emissionCO2Min).append(fuelConsumptionOverlandMin, rhs.fuelConsumptionOverlandMin).append(fuelConsumptionOverlandMax, rhs.fuelConsumptionOverlandMax).append(fuelConsumptionCityMin, rhs.fuelConsumptionCityMin).append(emissionCO2Max, rhs.emissionCO2Max).append(fuelConsumptionCombinedMin, rhs.fuelConsumptionCombinedMin).append(fuelConsumptionCombinedMax, rhs.fuelConsumptionCombinedMax).append(fuelConsumptionCityMax, rhs.fuelConsumptionCityMax).isEquals();
+        return new EqualsBuilder()
+                .append(fuelConsumptionElectricity, rhs.fuelConsumptionElectricity)
+                .append(emissionCO2Min, rhs.emissionCO2Min)
+                .append(fuelConsumptionOverlandMin, rhs.fuelConsumptionOverlandMin)
+                .append(consumptionOfElectricityMax, rhs.consumptionOfElectricityMax)
+                .append(fuelConsumptionOverlandMax, rhs.fuelConsumptionOverlandMax)
+                .append(fuelConsumptionCityMin, rhs.fuelConsumptionCityMin)
+                .append(emissionCO2Max, rhs.emissionCO2Max)
+                .append(fuelConsumptionCombinedMin, rhs.fuelConsumptionCombinedMin)
+                .append(fuelConsumptionCombinedMax, rhs.fuelConsumptionCombinedMax)
+                .append(fuelConsumptionCityMax, rhs.fuelConsumptionCityMax)
+                .append(consumptionOfElectricityMin, rhs.consumptionOfElectricityMin)
+                .isEquals();
     }
-
 }

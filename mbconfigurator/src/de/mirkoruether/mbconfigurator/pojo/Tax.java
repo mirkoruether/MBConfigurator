@@ -39,13 +39,13 @@ public class Tax implements Serializable
     private double amount;
     @SerializedName("baseAmount")
     @Expose
-    private int baseAmount;
+    private double baseAmount;
     @SerializedName("charge")
     @Expose
-    private int charge;
+    private double charge;
     @SerializedName("rate")
     @Expose
-    private int rate;
+    private double rate;
     private final static long serialVersionUID = -588297074510833818L;
 
     /**
@@ -64,7 +64,7 @@ public class Tax implements Serializable
      * @param rate
      * @param charge
      */
-    public Tax(String id, double amount, int baseAmount, int charge, int rate)
+    public Tax(String id, double amount, double baseAmount, double charge, double rate)
     {
         super();
         this.id = id;
@@ -106,49 +106,49 @@ public class Tax implements Serializable
         return this;
     }
 
-    public int getBaseAmount()
+    public double getBaseAmount()
     {
         return baseAmount;
     }
 
-    public void setBaseAmount(int baseAmount)
+    public void setBaseAmount(double baseAmount)
     {
         this.baseAmount = baseAmount;
     }
 
-    public Tax withBaseAmount(int baseAmount)
+    public Tax withBaseAmount(double baseAmount)
     {
         this.baseAmount = baseAmount;
         return this;
     }
 
-    public int getCharge()
+    public double getCharge()
     {
         return charge;
     }
 
-    public void setCharge(int charge)
+    public void setCharge(double charge)
     {
         this.charge = charge;
     }
 
-    public Tax withCharge(int charge)
+    public Tax withCharge(double charge)
     {
         this.charge = charge;
         return this;
     }
 
-    public int getRate()
+    public double getRate()
     {
         return rate;
     }
 
-    public void setRate(int rate)
+    public void setRate(double rate)
     {
         this.rate = rate;
     }
 
-    public Tax withRate(int rate)
+    public Tax withRate(double rate)
     {
         this.rate = rate;
         return this;
