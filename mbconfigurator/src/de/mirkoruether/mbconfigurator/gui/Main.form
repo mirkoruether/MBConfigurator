@@ -45,14 +45,17 @@
                       <Component id="newConfigurationBtn" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="tableScrollPane" alignment="0" pref="0" max="32767" attributes="0"/>
-                          <Group type="102" attributes="0">
-                              <Component id="searchTxt" min="-2" pref="200" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="clearSearchBtn" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                              <Component id="tableScrollPane" alignment="0" pref="0" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Component id="searchTxt" min="-2" pref="200" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="clearSearchBtn" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="componentImageLabel" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="componentImageLabel" max="32767" attributes="0"/>
+                          <Component id="hideDefaultCheckBox" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jSeparator3" min="-2" max="-2" attributes="0"/>
@@ -102,9 +105,11 @@
                           <Component id="searchTxt" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="clearSearchBtn" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="tableScrollPane" pref="358" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="hideDefaultCheckBox" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="tableScrollPane" pref="337" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="componentImageLabel" min="-2" pref="230" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -154,21 +159,33 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Neue Konfiguration starten"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newConfigurationBtnActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="saveBtn">
       <Properties>
         <Property name="text" type="java.lang.String" value="Speichern"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveBtnActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="saveAsBtn">
       <Properties>
         <Property name="text" type="java.lang.String" value="Speichern unter"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveAsBtnActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="openBtn">
       <Properties>
         <Property name="text" type="java.lang.String" value="&#xd6;ffnen"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="openBtnActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator1">
       <Properties>
@@ -198,21 +215,17 @@
       </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="tableScrollPane">
+      <Properties>
+        <Property name="horizontalScrollBarPolicy" type="int" value="32"/>
+      </Properties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JTable" name="componentsTable">
           <Properties>
             <Property name="autoCreateRowSorter" type="boolean" value="true"/>
-            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-              <Table columnCount="3" rowCount="0">
-                <Column editable="true" title="?" type="java.lang.Boolean"/>
-                <Column editable="false" title="Code" type="java.lang.String"/>
-                <Column editable="false" title="Name" type="java.lang.String"/>
-              </Table>
-            </Property>
-            <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
-              <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[1000, 1000]"/>
             </Property>
           </Properties>
         </Component>
@@ -223,6 +236,14 @@
         <Property name="horizontalAlignment" type="int" value="0"/>
         <Property name="text" type="java.lang.String" value="Bild"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="hideDefaultCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Standardaustattung ausblenden"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hideDefaultCheckBoxActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

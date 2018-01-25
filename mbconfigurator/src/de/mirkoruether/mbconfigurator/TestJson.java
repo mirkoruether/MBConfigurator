@@ -70,7 +70,7 @@ public class TestJson extends javax.swing.JFrame
         try
         {
             Class<?> clazz = Class.forName("de.mirkoruether.mbconfigurator.pojo." + classTxt.getText());
-            Object o = MBConfigurator.GSON.fromJson(jsonTxt.getText(), clazz);
+            Object o = MBConfigurator.fromJson(jsonTxt.getText(), clazz);
             String out = MBConfigurator.GSON.toJson(o);
             System.out.println(out);
             JOptionPane.showMessageDialog(null, out, "Ergebnis", JOptionPane.INFORMATION_MESSAGE);

@@ -79,7 +79,7 @@ public class MBConfigurator
     public static Market[] getMarkets(String language)
     {
         String response = request("markets", "language", language);
-        return parseArray(response, Market[].class);
+        return fromJson(response, Market[].class);
     }
 
     public static VehicleBody[] getVehicleBodies(String market, String productGroups, String classId)
@@ -87,7 +87,7 @@ public class MBConfigurator
         String response = request("markets/" + market + "/bodies",
                                   "productGroups", productGroups,
                                   "classId", classId);
-        return parseArray(response, VehicleBody[].class);
+        return fromJson(response, VehicleBody[].class);
     }
 
     public static VehicleClass[] getVehicleClasses(String market, String productGroups, String bodyId)
@@ -95,7 +95,7 @@ public class MBConfigurator
         String response = request("markets/" + market + "/classes",
                                   "productGroups", productGroups,
                                   "bodyId", bodyId);
-        return parseArray(response, VehicleClass[].class);
+        return fromJson(response, VehicleClass[].class);
     }
 
     public static Model[] getModels(String market, String productGroups, String classId, String bodyId)
@@ -104,38 +104,45 @@ public class MBConfigurator
                                   "productGroups", productGroups,
                                   "classId", classId,
                                   "bodyId", bodyId);
-        return parseArray(response, Model[].class);
+        return fromJson(response, Model[].class);
     }
 
     public static Configuration getInitialConfiguration(String market, String modelId)
     {
         String response = request("markets/" + market + "/models/" + modelId + "/configurations/initial");
-        return GSON.fromJson(response, Configuration.class);
+        return fromJson(response, Configuration.class);
     }
 
     public static Selectables getSelectibles(String market, String modelId, String configurationId)
     {
         String response = request("markets/" + market + "/models/" + modelId + "/configurations/" + configurationId + "/selectables");
-        return GSON.fromJson(response, Selectables.class);
+        return fromJson(response, Selectables.class);
     }
 
     public static <T> T fromLink(Links links, String linkKey, Class<T> clazz)
     {
         String response = getResponse(links.getLink(linkKey));
-        return GSON.fromJson(response, clazz);
+        return fromJson(response, clazz);
     }
 
     public static <T> T fromLink(String link, Class<T> clazz)
     {
         String response = getResponse(link);
-        return GSON.fromJson(response, clazz);
+        return fromJson(response, clazz);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> T[] parseArray(String response, Class<T[]> clazz)
+    public static <T> T fromJson(String response, Class<T> clazz)
     {
-        T[] result = GSON.fromJson(response, clazz);
-        return result == null ? (T[])Array.newInstance(clazz.getComponentType(), 0) : result;
+        if(clazz.isArray())
+        {
+            T result = GSON.fromJson(response, clazz);
+            return result == null ? (T)Array.newInstance(clazz.getComponentType(), 0) : result;
+        }
+        else
+        {
+            return GSON.fromJson(response, clazz);
+        }
     }
 
     public static String request(String path, String... parameters)

@@ -1,14 +1,21 @@
 package de.mirkoruether.mbconfigurator.gui;
 
 import de.mirkoruether.mbconfigurator.api.MBConfigurator;
+import de.mirkoruether.mbconfigurator.pojo.Configuration;
 import de.mirkoruether.mbconfigurator.pojo.Model;
 import de.mirkoruether.mbconfigurator.pojo.VehicleBody;
 import de.mirkoruether.mbconfigurator.pojo.VehicleClass;
+import de.mirkoruether.mbconfigurator.pojo.VehicleComponent;
 import de.mirkoruether.util.LinqList;
 import de.mirkoruether.util.gui.CoolComboBoxModel;
+import de.mirkoruether.util.gui.CoolTableModel;
 import java.awt.EventQueue;
+import java.io.File;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
 public class Main extends javax.swing.JFrame
 {
@@ -19,8 +26,12 @@ public class Main extends javax.swing.JFrame
     private final DefaultComboBoxModel<String> classComboModel;
     private final CoolComboBoxModel<VehicleBody> bodyComboModel;
     private final CoolComboBoxModel<Model> modelComboModel;
+    private final CoolTableModel<VehicleComponent> componentsTableModel;
 
     private final LinqList<VehicleClass> classes;
+
+    private Configuration currentConfig = null;
+    private final SaveManager saveManager;
 
     public Main()
     {
@@ -40,15 +51,35 @@ public class Main extends javax.swing.JFrame
         classNames.sort(null);
 
         classComboModel = new DefaultComboBoxModel<String>(classNames.toArray(String.class));
-        bodyComboModel = new CoolComboBoxModel<>((b) -> b.getBodyName(), true);
-        modelComboModel = new CoolComboBoxModel<>((m) -> m.getName(), true);
-
         classCombo.setModel(classComboModel);
+
+        bodyComboModel = new CoolComboBoxModel<>((b) -> b.getBodyName(), true);
         bodyCombo.setModel(bodyComboModel);
+
+        modelComboModel = new CoolComboBoxModel<>((m) -> m.getName(), true);
         modelCombo.setModel(modelComboModel);
+
+        componentsTableModel = new CoolTableModel<VehicleComponent>()
+                .addColumn("?", c -> c.isSelected(), Boolean.class, true, 20)
+                .addColumn("Code", c -> c.getCode(), String.class, false, 50)
+                .addColumn("Bezeichnung", c -> c.getName(), String.class, false, 200);
+        componentsTableModel.applyTo(componentsTable);
 
         classCombo.setSelectedItem(null);
 
+        saveManager = new SaveManager((f) -> saveConfiguration(f),
+                                      () ->
+                              {
+                                  JFileChooser fc = new JFileChooser();
+                                  if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION)
+                                  {
+                                      File f = fc.getSelectedFile();
+                                      if(saveConfiguration(f))
+                                          return f;
+                                  }
+                                  return null;
+                              },
+                                      () -> SaveManager.DialogResult.Discard);
         pack();
     }
 
@@ -73,6 +104,7 @@ public class Main extends javax.swing.JFrame
         tableScrollPane = new javax.swing.JScrollPane();
         componentsTable = new javax.swing.JTable();
         componentImageLabel = new javax.swing.JLabel();
+        hideDefaultCheckBox = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -93,12 +125,40 @@ public class Main extends javax.swing.JFrame
         });
 
         newConfigurationBtn.setText("Neue Konfiguration starten");
+        newConfigurationBtn.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                newConfigurationBtnActionPerformed(evt);
+            }
+        });
 
         saveBtn.setText("Speichern");
+        saveBtn.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                saveBtnActionPerformed(evt);
+            }
+        });
 
         saveAsBtn.setText("Speichern unter");
+        saveAsBtn.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                saveAsBtnActionPerformed(evt);
+            }
+        });
 
         openBtn.setText("Öffnen");
+        openBtn.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                openBtnActionPerformed(evt);
+            }
+        });
 
         jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
@@ -109,41 +169,23 @@ public class Main extends javax.swing.JFrame
 
         clearSearchBtn.setText("X");
 
+        tableScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+
         componentsTable.setAutoCreateRowSorter(true);
-        componentsTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][]
-            {
-
-            },
-            new String []
-            {
-                "?", "Code", "Name"
-            }
-        )
-        {
-            Class[] types = new Class []
-            {
-                java.lang.Boolean.class, java.lang.String.class, java.lang.String.class
-            };
-            boolean[] canEdit = new boolean []
-            {
-                true, false, false
-            };
-
-            public Class getColumnClass(int columnIndex)
-            {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex)
-            {
-                return canEdit [columnIndex];
-            }
-        });
+        componentsTable.setPreferredSize(new java.awt.Dimension(1000, 1000));
         tableScrollPane.setViewportView(componentsTable);
 
         componentImageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         componentImageLabel.setText("Bild");
+
+        hideDefaultCheckBox.setText("Standardaustattung ausblenden");
+        hideDefaultCheckBox.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                hideDefaultCheckBoxActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -170,13 +212,15 @@ public class Main extends javax.swing.JFrame
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(newConfigurationBtn))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(tableScrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(searchTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(clearSearchBtn))
-                            .addComponent(componentImageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(tableScrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(searchTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(clearSearchBtn))
+                                .addComponent(componentImageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(hideDefaultCheckBox))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -216,7 +260,9 @@ public class Main extends javax.swing.JFrame
                             .addComponent(searchTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(clearSearchBtn))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
+                        .addComponent(hideDefaultCheckBox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(componentImageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())))
@@ -227,46 +273,106 @@ public class Main extends javax.swing.JFrame
 
     private void classComboActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_classComboActionPerformed
     {//GEN-HEADEREND:event_classComboActionPerformed
+        bodyComboModel.removeAllElements();
         List<String> selectedClassIds = getSelectedClassIds();
-        if(selectedClassIds.isEmpty())
+        if(!selectedClassIds.isEmpty())
         {
-            bodyComboModel.removeAllElements();
-        }
-        else
-        {
-            LinqList<VehicleBody> bodies = new LinqList<>();
-            for(String id : selectedClassIds)
+            new Thread(() ->
             {
-                bodies.addAll(MBConfigurator.getVehicleBodies(MARKET, null, id));
-            }
-            bodies.sort((b1, b2) -> b1.getBodyName().compareTo(b2.getBodyName()));
-            bodyComboModel.setAll(bodies);
+                LinqList<VehicleBody> bodies = new LinqList<>();
+                for(String id : selectedClassIds)
+                {
+                    bodies.addAll(MBConfigurator.getVehicleBodies(MARKET, null, id));
+                }
+                bodies.sort((b1, b2) -> b1.getBodyName().compareTo(b2.getBodyName()));
+                EventQueue.invokeLater(() -> bodyComboModel.setAll(bodies));
+            }).start();
         }
     }//GEN-LAST:event_classComboActionPerformed
 
     private void bodyComboActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_bodyComboActionPerformed
     {//GEN-HEADEREND:event_bodyComboActionPerformed
+        modelComboModel.removeAllElements();
         List<String> selectedClassIds = getSelectedClassIds();
-
         VehicleBody selectedBody = bodyComboModel.getSelected();
         String selectedBodyId = selectedBody == null ? null : selectedBody.getBodyId();
 
-        if(selectedClassIds.isEmpty()
-           || selectedBodyId == null || selectedBodyId.trim().isEmpty())
+        if(!selectedClassIds.isEmpty()
+           && selectedBodyId != null && !selectedBodyId.trim().isEmpty())
         {
-            modelComboModel.removeAllElements();
-        }
-        else
-        {
-            LinqList<Model> models = new LinqList<>();
-            for(String id : selectedClassIds)
+            new Thread(() ->
             {
-                models.addAll(MBConfigurator.getModels(MARKET, null, id, selectedBodyId));
-            }
-            models.sort((m1, m2) -> m1.getName().compareTo(m2.getName()));
-            modelComboModel.setAll(models);
+                LinqList<Model> models = new LinqList<>();
+                for(String id : selectedClassIds)
+                {
+                    models.addAll(MBConfigurator.getModels(MARKET, null, id, selectedBodyId));
+                }
+                models.sort((m1, m2) -> m1.getName().compareTo(m2.getName()));
+                EventQueue.invokeLater(() -> modelComboModel.setAll(models));
+            }).start();
         }
     }//GEN-LAST:event_bodyComboActionPerformed
+
+    private void newConfigurationBtnActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_newConfigurationBtnActionPerformed
+    {//GEN-HEADEREND:event_newConfigurationBtnActionPerformed
+        try
+        {
+            Model selectedModel = modelComboModel.getSelected();
+            if(selectedModel == null || selectedModel.getModelId() == null || selectedModel.getModelId().trim().isEmpty())
+            {
+                JOptionPane.showMessageDialog(this, "Bitte zuerst ein Modell und eine Motorisierung auswählen!");
+                return;
+            }
+            if(!saveManager.newElement())
+                return;
+
+            setCurrentConfig(MBConfigurator.getInitialConfiguration(MARKET, selectedModel.getModelId()));
+        }
+        catch(Exception ex)
+        {
+            JOptionPane.showMessageDialog(this, "Unerwarteter Fehler!");
+            ex.printStackTrace();
+        }
+    }//GEN-LAST:event_newConfigurationBtnActionPerformed
+
+    private void openBtnActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_openBtnActionPerformed
+    {//GEN-HEADEREND:event_openBtnActionPerformed
+        JOptionPane.showMessageDialog(this, "Feature ist in Arbeit, sorry Bruder");
+    }//GEN-LAST:event_openBtnActionPerformed
+
+    private void saveBtnActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_saveBtnActionPerformed
+    {//GEN-HEADEREND:event_saveBtnActionPerformed
+        componentsTable.setSize(500, componentsTable.getHeight());
+        saveManager.save();
+    }//GEN-LAST:event_saveBtnActionPerformed
+
+    private void saveAsBtnActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_saveAsBtnActionPerformed
+    {//GEN-HEADEREND:event_saveAsBtnActionPerformed
+        saveManager.saveAs();
+    }//GEN-LAST:event_saveAsBtnActionPerformed
+
+    private void hideDefaultCheckBoxActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_hideDefaultCheckBoxActionPerformed
+    {//GEN-HEADEREND:event_hideDefaultCheckBoxActionPerformed
+        updateSeletables(currentConfig);
+    }//GEN-LAST:event_hideDefaultCheckBoxActionPerformed
+
+    public void setCurrentConfig(Configuration config)
+    {
+        updateSeletables(config);
+        currentConfig = config;
+    }
+
+    private void updateSeletables(Configuration config)
+    {
+        componentsTableModel.clear();
+        List<VehicleComponent> comps = MBConfigurator.getSelectibles(MARKET, config.getModelId(), config.getConfigurationId()).getVehicleComponents();
+        if(hideDefaultCheckBox.isSelected())
+        {
+            comps = new LinqList<>(comps).where(c -> !c.isStandard());
+        }
+        comps.sort((c1, c2) -> c1.getComponentSortId() - c2.getComponentSortId());
+        componentsTableModel.addAll(comps);
+    }
 
     private List<String> getSelectedClassIds()
     {
@@ -287,8 +393,15 @@ public class Main extends javax.swing.JFrame
         return ids;
     }
 
-    public static void main(String args[])
+    private boolean saveConfiguration(File f)
     {
+        //TODO implement
+        return true;
+    }
+
+    public static void main(String args[]) throws Exception
+    {
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         EventQueue.invokeLater(() -> new Main().setVisible(true));
     }
 
@@ -298,6 +411,7 @@ public class Main extends javax.swing.JFrame
     private javax.swing.JButton clearSearchBtn;
     private javax.swing.JLabel componentImageLabel;
     private javax.swing.JTable componentsTable;
+    private javax.swing.JCheckBox hideDefaultCheckBox;
     private javax.swing.JLabel imageLabel;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
