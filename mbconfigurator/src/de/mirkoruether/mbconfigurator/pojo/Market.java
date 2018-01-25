@@ -138,7 +138,12 @@ public class Market implements Serializable
     @Override
     public int hashCode()
     {
-        return new HashCodeBuilder().append(marketId).append(links).append(language).append(country).toHashCode();
+        return new HashCodeBuilder()
+                .append(marketId)
+                .append(links)
+                .append(language)
+                .append(country)
+                .toHashCode();
     }
 
     @Override
@@ -153,6 +158,11 @@ public class Market implements Serializable
             return false;
         }
         Market rhs = ((Market)other);
-        return new EqualsBuilder().append(marketId, rhs.marketId).append(links, rhs.links).append(language, rhs.language).append(country, rhs.country).isEquals();
+        return new EqualsBuilder()
+                .append(marketId, rhs.marketId)
+                .append(links, rhs.links)
+                .append(language, rhs.language)
+                .append(country, rhs.country)
+                .isEquals();
     }
 }

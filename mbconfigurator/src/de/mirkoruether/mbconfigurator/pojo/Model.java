@@ -262,7 +262,18 @@ public class Model implements Serializable
     @Override
     public int hashCode()
     {
-        return new HashCodeBuilder().append(productGroup).append(modelId).append(priceInformation).append(nationalSalesType).append(name).append(vehicleClass).append(links).append(vehicleBody).append(shortName).append(baumuster).toHashCode();
+        return new HashCodeBuilder()
+                .append(productGroup)
+                .append(modelId)
+                .append(priceInformation)
+                .append(nationalSalesType)
+                .append(name)
+                .append(vehicleClass)
+                .append(links)
+                .append(vehicleBody)
+                .append(shortName)
+                .append(baumuster)
+                .toHashCode();
     }
 
     @Override
@@ -277,6 +288,17 @@ public class Model implements Serializable
             return false;
         }
         Model rhs = ((Model)other);
-        return new EqualsBuilder().append(productGroup, rhs.productGroup).append(modelId, rhs.modelId).append(priceInformation, rhs.priceInformation).append(nationalSalesType, rhs.nationalSalesType).append(name, rhs.name).append(vehicleClass, rhs.vehicleClass).append(links, rhs.links).append(vehicleBody, rhs.vehicleBody).append(shortName, rhs.shortName).append(baumuster, rhs.baumuster).isEquals();
+        return new EqualsBuilder()
+                .append(productGroup, rhs.productGroup)
+                .append(modelId, rhs.modelId)
+                .append(priceInformation, rhs.priceInformation)
+                .append(nationalSalesType, rhs.nationalSalesType)
+                .append(name, rhs.name)
+                .append(vehicleClass, rhs.vehicleClass)
+                .append(links, rhs.links)
+                .append(vehicleBody, rhs.vehicleBody)
+                .append(shortName, rhs.shortName)
+                .append(baumuster, rhs.baumuster)
+                .isEquals();
     }
 }

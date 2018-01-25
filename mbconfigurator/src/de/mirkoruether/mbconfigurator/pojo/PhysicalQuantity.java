@@ -29,7 +29,7 @@ import java.io.Serializable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class PhysicalSize implements Serializable
+public class PhysicalQuantity implements Serializable
 {
     @SerializedName("value")
     @Expose
@@ -43,7 +43,7 @@ public class PhysicalSize implements Serializable
      * No args constructor for use in serialization
      *
      */
-    public PhysicalSize()
+    public PhysicalQuantity()
     {
     }
 
@@ -52,7 +52,7 @@ public class PhysicalSize implements Serializable
      * @param unit
      * @param value
      */
-    public PhysicalSize(double value, String unit)
+    public PhysicalQuantity(double value, String unit)
     {
         super();
         this.value = value;
@@ -69,7 +69,7 @@ public class PhysicalSize implements Serializable
         this.value = value;
     }
 
-    public PhysicalSize withValue(double value)
+    public PhysicalQuantity withValue(double value)
     {
         this.value = value;
         return this;
@@ -85,7 +85,7 @@ public class PhysicalSize implements Serializable
         this.unit = unit;
     }
 
-    public PhysicalSize withUnit(String unit)
+    public PhysicalQuantity withUnit(String unit)
     {
         this.unit = unit;
         return this;
@@ -94,7 +94,10 @@ public class PhysicalSize implements Serializable
     @Override
     public int hashCode()
     {
-        return new HashCodeBuilder().append(unit).append(value).toHashCode();
+        return new HashCodeBuilder()
+                .append(unit)
+                .append(value)
+                .toHashCode();
     }
 
     @Override
@@ -104,11 +107,14 @@ public class PhysicalSize implements Serializable
         {
             return true;
         }
-        if((other instanceof PhysicalSize) == false)
+        if((other instanceof PhysicalQuantity) == false)
         {
             return false;
         }
-        PhysicalSize rhs = ((PhysicalSize)other);
-        return new EqualsBuilder().append(unit, rhs.unit).append(value, rhs.value).isEquals();
+        PhysicalQuantity rhs = ((PhysicalQuantity)other);
+        return new EqualsBuilder()
+                .append(unit, rhs.unit)
+                .append(value, rhs.value)
+                .isEquals();
     }
 }

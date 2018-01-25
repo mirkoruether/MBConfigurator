@@ -48,22 +48,22 @@ public class Engine implements Serializable
     private FuelEconomy fuelEconomy;
     @SerializedName("powerHp")
     @Expose
-    private PhysicalSize powerHp;
+    private PhysicalQuantity powerHp;
     @SerializedName("powerKw")
     @Expose
-    private PhysicalSize powerKw;
+    private PhysicalQuantity powerKw;
     @SerializedName("powerHybridExtensionHp")
     @Expose
-    private PhysicalSize powerHybridExtensionHp;
+    private PhysicalQuantity powerHybridExtensionHp;
     @SerializedName("powerHybridExtensionKw")
     @Expose
-    private PhysicalSize powerHybridExtensionKw;
+    private PhysicalQuantity powerHybridExtensionKw;
     @SerializedName("cylinder")
     @Expose
     private String cylinder;
     @SerializedName("capacity")
     @Expose
-    private PhysicalSize capacity;
+    private PhysicalQuantity capacity;
     @SerializedName("emissionStandard")
     @Expose
     private String emissionStandard;
@@ -92,7 +92,7 @@ public class Engine implements Serializable
      * @param powerHp
      * @param powerKw
      */
-    public Engine(String fuelType, String alternativeFuelType, String engineConcept, String driveConcept, FuelEconomy fuelEconomy, PhysicalSize powerHp, PhysicalSize powerKw, PhysicalSize powerHybridExtensionHp, PhysicalSize powerHybridExtensionKw, String cylinder, PhysicalSize capacity, String emissionStandard)
+    public Engine(String fuelType, String alternativeFuelType, String engineConcept, String driveConcept, FuelEconomy fuelEconomy, PhysicalQuantity powerHp, PhysicalQuantity powerKw, PhysicalQuantity powerHybridExtensionHp, PhysicalQuantity powerHybridExtensionKw, String cylinder, PhysicalQuantity capacity, String emissionStandard)
     {
         this.fuelType = fuelType;
         this.alternativeFuelType = alternativeFuelType;
@@ -188,65 +188,65 @@ public class Engine implements Serializable
         return this;
     }
 
-    public PhysicalSize getPowerHp()
+    public PhysicalQuantity getPowerHp()
     {
         return powerHp;
     }
 
-    public void setPowerHp(PhysicalSize powerHp)
+    public void setPowerHp(PhysicalQuantity powerHp)
     {
         this.powerHp = powerHp;
     }
 
-    public Engine withPowerHp(PhysicalSize powerHp)
+    public Engine withPowerHp(PhysicalQuantity powerHp)
     {
         this.powerHp = powerHp;
         return this;
     }
 
-    public PhysicalSize getPowerKw()
+    public PhysicalQuantity getPowerKw()
     {
         return powerKw;
     }
 
-    public void setPowerKw(PhysicalSize powerKw)
+    public void setPowerKw(PhysicalQuantity powerKw)
     {
         this.powerKw = powerKw;
     }
 
-    public Engine withPowerKw(PhysicalSize powerKw)
+    public Engine withPowerKw(PhysicalQuantity powerKw)
     {
         this.powerKw = powerKw;
         return this;
     }
 
-    public PhysicalSize getPowerHybridExtensionHp()
+    public PhysicalQuantity getPowerHybridExtensionHp()
     {
         return powerHybridExtensionHp;
     }
 
-    public void setPowerHybridExtensionHp(PhysicalSize powerHybridExtensionHp)
+    public void setPowerHybridExtensionHp(PhysicalQuantity powerHybridExtensionHp)
     {
         this.powerHybridExtensionHp = powerHybridExtensionHp;
     }
 
-    public Engine withPowerHybridExtensionHp(PhysicalSize powerHybridExtensionHp)
+    public Engine withPowerHybridExtensionHp(PhysicalQuantity powerHybridExtensionHp)
     {
         this.powerHybridExtensionHp = powerHybridExtensionHp;
         return this;
     }
 
-    public PhysicalSize getPowerHybridExtensionKw()
+    public PhysicalQuantity getPowerHybridExtensionKw()
     {
         return powerHybridExtensionKw;
     }
 
-    public void setPowerHybridExtensionKw(PhysicalSize powerHybridExtensionKw)
+    public void setPowerHybridExtensionKw(PhysicalQuantity powerHybridExtensionKw)
     {
         this.powerHybridExtensionKw = powerHybridExtensionKw;
     }
 
-    public Engine withPowerHybridExtensionKw(PhysicalSize powerHybridExtensionKw)
+    public Engine withPowerHybridExtensionKw(PhysicalQuantity powerHybridExtensionKw)
     {
         this.powerHybridExtensionKw = powerHybridExtensionKw;
         return this;
@@ -268,17 +268,17 @@ public class Engine implements Serializable
         return this;
     }
 
-    public PhysicalSize getCapacity()
+    public PhysicalQuantity getCapacity()
     {
         return capacity;
     }
 
-    public void setCapacity(PhysicalSize capacity)
+    public void setCapacity(PhysicalQuantity capacity)
     {
         this.capacity = capacity;
     }
 
-    public Engine withCapacity(PhysicalSize capacity)
+    public Engine withCapacity(PhysicalQuantity capacity)
     {
         this.capacity = capacity;
         return this;

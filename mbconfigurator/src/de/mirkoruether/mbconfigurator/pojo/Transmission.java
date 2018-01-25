@@ -116,7 +116,11 @@ public class Transmission implements Serializable
     @Override
     public int hashCode()
     {
-        return new HashCodeBuilder().append(name).append(codeType).append(code).toHashCode();
+        return new HashCodeBuilder()
+                .append(name)
+                .append(codeType)
+                .append(code)
+                .toHashCode();
     }
 
     @Override
@@ -131,7 +135,11 @@ public class Transmission implements Serializable
             return false;
         }
         Transmission rhs = ((Transmission)other);
-        return new EqualsBuilder().append(name, rhs.name).append(codeType, rhs.codeType).append(code, rhs.code).isEquals();
+        return new EqualsBuilder()
+                .append(name, rhs.name)
+                .append(codeType, rhs.codeType)
+                .append(code, rhs.code)
+                .isEquals();
     }
 
 }

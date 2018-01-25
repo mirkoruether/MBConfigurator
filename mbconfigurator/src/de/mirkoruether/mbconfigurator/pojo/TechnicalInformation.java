@@ -43,10 +43,10 @@ public class TechnicalInformation implements Serializable
     private Transmission transmission;
     @SerializedName("acceleration")
     @Expose
-    private PhysicalSize acceleration;
+    private PhysicalQuantity acceleration;
     @SerializedName("topSpeed")
     @Expose
-    private PhysicalSize topSpeed;
+    private PhysicalQuantity topSpeed;
     @SerializedName("doors")
     @Expose
     private int doors;
@@ -73,7 +73,7 @@ public class TechnicalInformation implements Serializable
      * @param transmission
      * @param topSpeed
      */
-    public TechnicalInformation(Engine engine, String energyEfficiencyClass, Transmission transmission, PhysicalSize acceleration, PhysicalSize topSpeed, int doors, int seats)
+    public TechnicalInformation(Engine engine, String energyEfficiencyClass, Transmission transmission, PhysicalQuantity acceleration, PhysicalQuantity topSpeed, int doors, int seats)
     {
         super();
         this.engine = engine;
@@ -133,33 +133,33 @@ public class TechnicalInformation implements Serializable
         return this;
     }
 
-    public PhysicalSize getAcceleration()
+    public PhysicalQuantity getAcceleration()
     {
         return acceleration;
     }
 
-    public void setAcceleration(PhysicalSize acceleration)
+    public void setAcceleration(PhysicalQuantity acceleration)
     {
         this.acceleration = acceleration;
     }
 
-    public TechnicalInformation withAcceleration(PhysicalSize acceleration)
+    public TechnicalInformation withAcceleration(PhysicalQuantity acceleration)
     {
         this.acceleration = acceleration;
         return this;
     }
 
-    public PhysicalSize getTopSpeed()
+    public PhysicalQuantity getTopSpeed()
     {
         return topSpeed;
     }
 
-    public void setTopSpeed(PhysicalSize topSpeed)
+    public void setTopSpeed(PhysicalQuantity topSpeed)
     {
         this.topSpeed = topSpeed;
     }
 
-    public TechnicalInformation withTopSpeed(PhysicalSize topSpeed)
+    public TechnicalInformation withTopSpeed(PhysicalQuantity topSpeed)
     {
         this.topSpeed = topSpeed;
         return this;
@@ -200,7 +200,15 @@ public class TechnicalInformation implements Serializable
     @Override
     public int hashCode()
     {
-        return new HashCodeBuilder().append(doors).append(engine).append(acceleration).append(energyEfficiencyClass).append(seats).append(transmission).append(topSpeed).toHashCode();
+        return new HashCodeBuilder()
+                .append(doors)
+                .append(engine)
+                .append(acceleration)
+                .append(energyEfficiencyClass)
+                .append(seats)
+                .append(transmission)
+                .append(topSpeed)
+                .toHashCode();
     }
 
     @Override
@@ -215,7 +223,15 @@ public class TechnicalInformation implements Serializable
             return false;
         }
         TechnicalInformation rhs = ((TechnicalInformation)other);
-        return new EqualsBuilder().append(doors, rhs.doors).append(engine, rhs.engine).append(acceleration, rhs.acceleration).append(energyEfficiencyClass, rhs.energyEfficiencyClass).append(seats, rhs.seats).append(transmission, rhs.transmission).append(topSpeed, rhs.topSpeed).isEquals();
+        return new EqualsBuilder()
+                .append(doors, rhs.doors)
+                .append(engine, rhs.engine)
+                .append(acceleration, rhs.acceleration)
+                .append(energyEfficiencyClass, rhs.energyEfficiencyClass)
+                .append(seats, rhs.seats)
+                .append(transmission, rhs.transmission)
+                .append(topSpeed, rhs.topSpeed)
+                .isEquals();
     }
 
 }

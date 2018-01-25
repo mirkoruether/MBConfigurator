@@ -34,37 +34,37 @@ public class FuelEconomy implements Serializable
 
     @SerializedName("fuelConsumptionCityMin")
     @Expose
-    private PhysicalSize fuelConsumptionCityMin;
+    private PhysicalQuantity fuelConsumptionCityMin;
     @SerializedName("fuelConsumptionCityMax")
     @Expose
-    private PhysicalSize fuelConsumptionCityMax;
+    private PhysicalQuantity fuelConsumptionCityMax;
     @SerializedName("fuelConsumptionOverlandMin")
     @Expose
-    private PhysicalSize fuelConsumptionOverlandMin;
+    private PhysicalQuantity fuelConsumptionOverlandMin;
     @SerializedName("fuelConsumptionOverlandMax")
     @Expose
-    private PhysicalSize fuelConsumptionOverlandMax;
+    private PhysicalQuantity fuelConsumptionOverlandMax;
     @SerializedName("fuelConsumptionCombinedMin")
     @Expose
-    private PhysicalSize fuelConsumptionCombinedMin;
+    private PhysicalQuantity fuelConsumptionCombinedMin;
     @SerializedName("fuelConsumptionCombinedMax")
     @Expose
-    private PhysicalSize fuelConsumptionCombinedMax;
+    private PhysicalQuantity fuelConsumptionCombinedMax;
     @SerializedName("fuelConsumptionElectricity")
     @Expose
-    private PhysicalSize fuelConsumptionElectricity;
+    private PhysicalQuantity fuelConsumptionElectricity;
     @SerializedName("consumptionOfElectricityMin")
     @Expose
-    private PhysicalSize consumptionOfElectricityMin;
+    private PhysicalQuantity consumptionOfElectricityMin;
     @SerializedName("consumptionOfElectricityMax")
     @Expose
-    private PhysicalSize consumptionOfElectricityMax;
+    private PhysicalQuantity consumptionOfElectricityMax;
     @SerializedName("emissionCO2Min")
     @Expose
-    private PhysicalSize emissionCO2Min;
+    private PhysicalQuantity emissionCO2Min;
     @SerializedName("emissionCO2Max")
     @Expose
-    private PhysicalSize emissionCO2Max;
+    private PhysicalQuantity emissionCO2Max;
     private final static long serialVersionUID = 2577709601392224793L;
 
     /**
@@ -89,7 +89,7 @@ public class FuelEconomy implements Serializable
      * @param fuelConsumptionCombinedMax
      * @param fuelConsumptionCityMax
      */
-    public FuelEconomy(PhysicalSize fuelConsumptionCityMin, PhysicalSize fuelConsumptionCityMax, PhysicalSize fuelConsumptionOverlandMin, PhysicalSize fuelConsumptionOverlandMax, PhysicalSize fuelConsumptionCombinedMin, PhysicalSize fuelConsumptionCombinedMax, PhysicalSize fuelConsumptionElectricity, PhysicalSize consumptionOfElectricityMin, PhysicalSize consumptionOfElectricityMax, PhysicalSize emissionCO2Min, PhysicalSize emissionCO2Max)
+    public FuelEconomy(PhysicalQuantity fuelConsumptionCityMin, PhysicalQuantity fuelConsumptionCityMax, PhysicalQuantity fuelConsumptionOverlandMin, PhysicalQuantity fuelConsumptionOverlandMax, PhysicalQuantity fuelConsumptionCombinedMin, PhysicalQuantity fuelConsumptionCombinedMax, PhysicalQuantity fuelConsumptionElectricity, PhysicalQuantity consumptionOfElectricityMin, PhysicalQuantity consumptionOfElectricityMax, PhysicalQuantity emissionCO2Min, PhysicalQuantity emissionCO2Max)
     {
         this.fuelConsumptionCityMin = fuelConsumptionCityMin;
         this.fuelConsumptionCityMax = fuelConsumptionCityMax;
@@ -104,177 +104,177 @@ public class FuelEconomy implements Serializable
         this.emissionCO2Max = emissionCO2Max;
     }
 
-    public PhysicalSize getFuelConsumptionCityMin()
+    public PhysicalQuantity getFuelConsumptionCityMin()
     {
         return fuelConsumptionCityMin;
     }
 
-    public void setFuelConsumptionCityMin(PhysicalSize fuelConsumptionCityMin)
+    public void setFuelConsumptionCityMin(PhysicalQuantity fuelConsumptionCityMin)
     {
         this.fuelConsumptionCityMin = fuelConsumptionCityMin;
     }
 
-    public FuelEconomy withFuelConsumptionCityMin(PhysicalSize fuelConsumptionCityMin)
+    public FuelEconomy withFuelConsumptionCityMin(PhysicalQuantity fuelConsumptionCityMin)
     {
         this.fuelConsumptionCityMin = fuelConsumptionCityMin;
         return this;
     }
 
-    public PhysicalSize getFuelConsumptionCityMax()
+    public PhysicalQuantity getFuelConsumptionCityMax()
     {
         return fuelConsumptionCityMax;
     }
 
-    public void setFuelConsumptionCityMax(PhysicalSize fuelConsumptionCityMax)
+    public void setFuelConsumptionCityMax(PhysicalQuantity fuelConsumptionCityMax)
     {
         this.fuelConsumptionCityMax = fuelConsumptionCityMax;
     }
 
-    public FuelEconomy withFuelConsumptionCityMax(PhysicalSize fuelConsumptionCityMax)
+    public FuelEconomy withFuelConsumptionCityMax(PhysicalQuantity fuelConsumptionCityMax)
     {
         this.fuelConsumptionCityMax = fuelConsumptionCityMax;
         return this;
     }
 
-    public PhysicalSize getFuelConsumptionOverlandMin()
+    public PhysicalQuantity getFuelConsumptionOverlandMin()
     {
         return fuelConsumptionOverlandMin;
     }
 
-    public void setFuelConsumptionOverlandMin(PhysicalSize fuelConsumptionOverlandMin)
+    public void setFuelConsumptionOverlandMin(PhysicalQuantity fuelConsumptionOverlandMin)
     {
         this.fuelConsumptionOverlandMin = fuelConsumptionOverlandMin;
     }
 
-    public FuelEconomy withFuelConsumptionOverlandMin(PhysicalSize fuelConsumptionOverlandMin)
+    public FuelEconomy withFuelConsumptionOverlandMin(PhysicalQuantity fuelConsumptionOverlandMin)
     {
         this.fuelConsumptionOverlandMin = fuelConsumptionOverlandMin;
         return this;
     }
 
-    public PhysicalSize getFuelConsumptionOverlandMax()
+    public PhysicalQuantity getFuelConsumptionOverlandMax()
     {
         return fuelConsumptionOverlandMax;
     }
 
-    public void setFuelConsumptionOverlandMax(PhysicalSize fuelConsumptionOverlandMax)
+    public void setFuelConsumptionOverlandMax(PhysicalQuantity fuelConsumptionOverlandMax)
     {
         this.fuelConsumptionOverlandMax = fuelConsumptionOverlandMax;
     }
 
-    public FuelEconomy withFuelConsumptionOverlandMax(PhysicalSize fuelConsumptionOverlandMax)
+    public FuelEconomy withFuelConsumptionOverlandMax(PhysicalQuantity fuelConsumptionOverlandMax)
     {
         this.fuelConsumptionOverlandMax = fuelConsumptionOverlandMax;
         return this;
     }
 
-    public PhysicalSize getFuelConsumptionCombinedMin()
+    public PhysicalQuantity getFuelConsumptionCombinedMin()
     {
         return fuelConsumptionCombinedMin;
     }
 
-    public void setFuelConsumptionCombinedMin(PhysicalSize fuelConsumptionCombinedMin)
+    public void setFuelConsumptionCombinedMin(PhysicalQuantity fuelConsumptionCombinedMin)
     {
         this.fuelConsumptionCombinedMin = fuelConsumptionCombinedMin;
     }
 
-    public FuelEconomy withFuelConsumptionCombinedMin(PhysicalSize fuelConsumptionCombinedMin)
+    public FuelEconomy withFuelConsumptionCombinedMin(PhysicalQuantity fuelConsumptionCombinedMin)
     {
         this.fuelConsumptionCombinedMin = fuelConsumptionCombinedMin;
         return this;
     }
 
-    public PhysicalSize getFuelConsumptionCombinedMax()
+    public PhysicalQuantity getFuelConsumptionCombinedMax()
     {
         return fuelConsumptionCombinedMax;
     }
 
-    public void setFuelConsumptionCombinedMax(PhysicalSize fuelConsumptionCombinedMax)
+    public void setFuelConsumptionCombinedMax(PhysicalQuantity fuelConsumptionCombinedMax)
     {
         this.fuelConsumptionCombinedMax = fuelConsumptionCombinedMax;
     }
 
-    public FuelEconomy withFuelConsumptionCombinedMax(PhysicalSize fuelConsumptionCombinedMax)
+    public FuelEconomy withFuelConsumptionCombinedMax(PhysicalQuantity fuelConsumptionCombinedMax)
     {
         this.fuelConsumptionCombinedMax = fuelConsumptionCombinedMax;
         return this;
     }
 
-    public PhysicalSize getFuelConsumptionElectricity()
+    public PhysicalQuantity getFuelConsumptionElectricity()
     {
         return fuelConsumptionElectricity;
     }
 
-    public void setFuelConsumptionElectricity(PhysicalSize fuelConsumptionElectricity)
+    public void setFuelConsumptionElectricity(PhysicalQuantity fuelConsumptionElectricity)
     {
         this.fuelConsumptionElectricity = fuelConsumptionElectricity;
     }
 
-    public FuelEconomy withFuelConsumptionElectricity(PhysicalSize fuelConsumptionElectricity)
+    public FuelEconomy withFuelConsumptionElectricity(PhysicalQuantity fuelConsumptionElectricity)
     {
         this.fuelConsumptionElectricity = fuelConsumptionElectricity;
         return this;
     }
 
-    public PhysicalSize getConsumptionOfElectricityMin()
+    public PhysicalQuantity getConsumptionOfElectricityMin()
     {
         return consumptionOfElectricityMin;
     }
 
-    public void setConsumptionOfElectricityMin(PhysicalSize consumptionOfElectricityMin)
+    public void setConsumptionOfElectricityMin(PhysicalQuantity consumptionOfElectricityMin)
     {
         this.consumptionOfElectricityMin = consumptionOfElectricityMin;
     }
 
-    public FuelEconomy withConsumptionOfElectricityMin(PhysicalSize consumptionOfElectricityMin)
+    public FuelEconomy withConsumptionOfElectricityMin(PhysicalQuantity consumptionOfElectricityMin)
     {
         this.consumptionOfElectricityMin = consumptionOfElectricityMin;
         return this;
     }
 
-    public PhysicalSize getConsumptionOfElectricityMax()
+    public PhysicalQuantity getConsumptionOfElectricityMax()
     {
         return consumptionOfElectricityMax;
     }
 
-    public void setConsumptionOfElectricityMax(PhysicalSize consumptionOfElectricityMax)
+    public void setConsumptionOfElectricityMax(PhysicalQuantity consumptionOfElectricityMax)
     {
         this.consumptionOfElectricityMax = consumptionOfElectricityMax;
     }
 
-    public FuelEconomy withConsumptionOfElectricityMax(PhysicalSize consumptionOfElectricityMax)
+    public FuelEconomy withConsumptionOfElectricityMax(PhysicalQuantity consumptionOfElectricityMax)
     {
         this.consumptionOfElectricityMax = consumptionOfElectricityMax;
         return this;
     }
 
-    public PhysicalSize getEmissionCO2Min()
+    public PhysicalQuantity getEmissionCO2Min()
     {
         return emissionCO2Min;
     }
 
-    public void setEmissionCO2Min(PhysicalSize emissionCO2Min)
+    public void setEmissionCO2Min(PhysicalQuantity emissionCO2Min)
     {
         this.emissionCO2Min = emissionCO2Min;
     }
 
-    public FuelEconomy withEmissionCO2Min(PhysicalSize emissionCO2Min)
+    public FuelEconomy withEmissionCO2Min(PhysicalQuantity emissionCO2Min)
     {
         this.emissionCO2Min = emissionCO2Min;
         return this;
     }
 
-    public PhysicalSize getEmissionCO2Max()
+    public PhysicalQuantity getEmissionCO2Max()
     {
         return emissionCO2Max;
     }
 
-    public void setEmissionCO2Max(PhysicalSize emissionCO2Max)
+    public void setEmissionCO2Max(PhysicalQuantity emissionCO2Max)
     {
         this.emissionCO2Max = emissionCO2Max;
     }
 
-    public FuelEconomy withEmissionCO2Max(PhysicalSize emissionCO2Max)
+    public FuelEconomy withEmissionCO2Max(PhysicalQuantity emissionCO2Max)
     {
         this.emissionCO2Max = emissionCO2Max;
         return this;

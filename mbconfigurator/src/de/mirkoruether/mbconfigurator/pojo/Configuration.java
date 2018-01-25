@@ -284,7 +284,19 @@ public class Configuration implements Serializable
     @Override
     public int hashCode()
     {
-        return new HashCodeBuilder().append(modelId).append(marketId).append(initialPrice).append(modelYear).append(links).append(changeYear).append(wltpConfiguration).append(configurationId).append(technicalInformation).append(vehicleComponents).append(configurationPrice).toHashCode();
+        return new HashCodeBuilder()
+                .append(modelId)
+                .append(marketId)
+                .append(initialPrice)
+                .append(modelYear)
+                .append(links)
+                .append(changeYear)
+                .append(wltpConfiguration)
+                .append(configurationId)
+                .append(technicalInformation)
+                .append(vehicleComponents)
+                .append(configurationPrice)
+                .toHashCode();
     }
 
     @Override
@@ -299,7 +311,19 @@ public class Configuration implements Serializable
             return false;
         }
         Configuration rhs = ((Configuration)other);
-        return new EqualsBuilder().append(modelId, rhs.modelId).append(marketId, rhs.marketId).append(initialPrice, rhs.initialPrice).append(modelYear, rhs.modelYear).append(links, rhs.links).append(changeYear, rhs.changeYear).append(wltpConfiguration, rhs.wltpConfiguration).append(configurationId, rhs.configurationId).append(technicalInformation, rhs.technicalInformation).append(vehicleComponents, rhs.vehicleComponents).append(configurationPrice, rhs.configurationPrice).isEquals();
+        return new EqualsBuilder()
+                .append(modelId, rhs.modelId)
+                .append(marketId, rhs.marketId)
+                .append(initialPrice, rhs.initialPrice)
+                .append(modelYear, rhs.modelYear)
+                .append(links, rhs.links)
+                .append(changeYear, rhs.changeYear)
+                .append(wltpConfiguration, rhs.wltpConfiguration)
+                .append(configurationId, rhs.configurationId)
+                .append(technicalInformation, rhs.technicalInformation)
+                .append(vehicleComponents, rhs.vehicleComponents)
+                .append(configurationPrice, rhs.configurationPrice)
+                .isEquals();
     }
 
 }

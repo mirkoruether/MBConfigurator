@@ -37,6 +37,7 @@ import de.mirkoruether.mbconfigurator.pojo.VehicleClass;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -78,7 +79,7 @@ public class MBConfigurator
     public static Market[] getMarkets(String language)
     {
         String response = request("markets", "language", language);
-        return GSON.fromJson(response, Market[].class);
+        return parseArray(response, Market[].class);
     }
 
     public static VehicleBody[] getVehicleBodies(String market, String productGroups, String classId)
@@ -86,7 +87,7 @@ public class MBConfigurator
         String response = request("markets/" + market + "/bodies",
                                   "productGroups", productGroups,
                                   "classId", classId);
-        return GSON.fromJson(response, VehicleBody[].class);
+        return parseArray(response, VehicleBody[].class);
     }
 
     public static VehicleClass[] getVehicleClasses(String market, String productGroups, String bodyId)
@@ -94,7 +95,7 @@ public class MBConfigurator
         String response = request("markets/" + market + "/classes",
                                   "productGroups", productGroups,
                                   "bodyId", bodyId);
-        return GSON.fromJson(response, VehicleClass[].class);
+        return parseArray(response, VehicleClass[].class);
     }
 
     public static Model[] getModels(String market, String productGroups, String classId, String bodyId)
@@ -103,7 +104,7 @@ public class MBConfigurator
                                   "productGroups", productGroups,
                                   "classId", classId,
                                   "bodyId", bodyId);
-        return GSON.fromJson(response, Model[].class);
+        return parseArray(response, Model[].class);
     }
 
     public static Configuration getInitialConfiguration(String market, String modelId)
@@ -128,6 +129,13 @@ public class MBConfigurator
     {
         String response = getResponse(link);
         return GSON.fromJson(response, clazz);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T[] parseArray(String response, Class<T[]> clazz)
+    {
+        T[] result = GSON.fromJson(response, clazz);
+        return result == null ? (T[])Array.newInstance(clazz.getComponentType(), 0) : result;
     }
 
     public static String request(String path, String... parameters)
@@ -155,7 +163,7 @@ public class MBConfigurator
         try
         {
             Fault f = GSON.fromJson(response, Fault.class);
-            if(f.getFaultstring() != null)
+            if(f != null && f.getFaultstring() != null)
                 throw new ApiFaultException(f.getFaultstring());
         }
         catch(JsonParseException ex)

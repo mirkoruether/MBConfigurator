@@ -122,7 +122,11 @@ public class Selectables implements Serializable
     @Override
     public int hashCode()
     {
-        return new HashCodeBuilder().append(componentCategories).append(links).append(vehicleComponents).toHashCode();
+        return new HashCodeBuilder()
+                .append(componentCategories)
+                .append(links)
+                .append(vehicleComponents)
+                .toHashCode();
     }
 
     @Override
@@ -137,7 +141,11 @@ public class Selectables implements Serializable
             return false;
         }
         Selectables rhs = ((Selectables)other);
-        return new EqualsBuilder().append(componentCategories, rhs.componentCategories).append(links, rhs.links).append(vehicleComponents, rhs.vehicleComponents).isEquals();
+        return new EqualsBuilder()
+                .append(componentCategories, rhs.componentCategories)
+                .append(links, rhs.links)
+                .append(vehicleComponents, rhs.vehicleComponents)
+                .isEquals();
     }
 
     public static class Deserializer implements com.google.gson.JsonDeserializer<Selectables>
