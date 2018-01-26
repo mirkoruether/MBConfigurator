@@ -66,6 +66,18 @@ public class LinqList<T> extends ArrayList<T>
         return get(0);
     }
 
+    public T firstWhere(Predicate<T> func)
+    {
+        for(T obj : this)
+        {
+            if(func.test(obj))
+            {
+                return obj;
+            }
+        }
+        return null;
+    }
+
     public T last()
     {
         return get(size() - 1);

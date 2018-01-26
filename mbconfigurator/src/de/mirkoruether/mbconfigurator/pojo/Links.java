@@ -31,9 +31,12 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import de.mirkoruether.util.LinqList;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -52,9 +55,19 @@ public class Links implements Serializable
         this.links = links;
     }
 
+    public boolean hasLink(String key)
+    {
+        return links != null && links.containsKey(key);
+    }
+
     public String getLink(String key)
     {
         return (links == null || !links.containsKey(key)) ? null : links.get(key);
+    }
+
+    public List<String> keys()
+    {
+        return links == null ? new LinqList<>() : new LinkedList<>(links.keySet());
     }
 
     public Map<String, String> getLinks()

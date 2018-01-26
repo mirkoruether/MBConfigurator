@@ -3,19 +3,30 @@ package de.mirkoruether.mbconfigurator.gui;
 import de.mirkoruether.mbconfigurator.api.MBConfigurator;
 import de.mirkoruether.mbconfigurator.pojo.Configuration;
 import de.mirkoruether.mbconfigurator.pojo.Model;
+import de.mirkoruether.mbconfigurator.pojo.Selectables;
 import de.mirkoruether.mbconfigurator.pojo.VehicleBody;
 import de.mirkoruether.mbconfigurator.pojo.VehicleClass;
 import de.mirkoruether.mbconfigurator.pojo.VehicleComponent;
 import de.mirkoruether.util.LinqList;
 import de.mirkoruether.util.gui.CoolComboBoxModel;
 import de.mirkoruether.util.gui.CoolTableModel;
+import de.mirkoruether.util.gui.ImageHolder;
 import java.awt.EventQueue;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.List;
+import java.util.Map;
+import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.UIManager;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableModelEvent;
 
 public class Main extends javax.swing.JFrame
 {
@@ -31,6 +42,7 @@ public class Main extends javax.swing.JFrame
     private final LinqList<VehicleClass> classes;
 
     private Configuration currentConfig = null;
+    private LinqList<VehicleComponent> selectables = new LinqList<>();
     private final SaveManager saveManager;
 
     public Main()
@@ -59,11 +71,15 @@ public class Main extends javax.swing.JFrame
         modelComboModel = new CoolComboBoxModel<>((m) -> m.getName(), true);
         modelCombo.setModel(modelComboModel);
 
+        componentsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         componentsTableModel = new CoolTableModel<VehicleComponent>()
                 .addColumn("?", c -> c.isSelected(), Boolean.class, true, 20)
-                .addColumn("Code", c -> c.getCode(), String.class, false, 50)
+                .addColumn("Code", c -> c.getId(), String.class, false, 50)
+                .addColumn("Kategorie", c -> c.getCategory() == null ? "-" : c.getCategory().getCategoryName(), String.class, false, 100)
                 .addColumn("Bezeichnung", c -> c.getName(), String.class, false, 200);
         componentsTableModel.applyTo(componentsTable);
+        componentsTableModel.addTableModelListener(evt -> tableChanged(evt));
+        componentsTable.getSelectionModel().addListSelectionListener((evt) -> selectionChanged(evt));
 
         classCombo.setSelectedItem(null);
 
@@ -96,15 +112,18 @@ public class Main extends javax.swing.JFrame
         openBtn = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
-        imageLabel = new javax.swing.JLabel();
-        jSeparator3 = new javax.swing.JSeparator();
-        jSeparator4 = new javax.swing.JSeparator();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        jPanel3 = new javax.swing.JPanel();
         searchTxt = new javax.swing.JTextField();
         clearSearchBtn = new javax.swing.JButton();
-        tableScrollPane = new javax.swing.JScrollPane();
-        componentsTable = new javax.swing.JTable();
-        componentImageLabel = new javax.swing.JLabel();
         hideDefaultCheckBox = new javax.swing.JCheckBox();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        componentsTable = new javax.swing.JTable();
+        componentImageLabel = new ImageHolder();
+        jPanel4 = new javax.swing.JPanel();
+        imageLabel = new ImageHolder();
+        jSeparator3 = new javax.swing.JSeparator();
+        refreshBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -162,21 +181,7 @@ public class Main extends javax.swing.JFrame
 
         jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
-        imageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        imageLabel.setText("Bild");
-
-        jSeparator3.setOrientation(javax.swing.SwingConstants.VERTICAL);
-
         clearSearchBtn.setText("X");
-
-        tableScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-
-        componentsTable.setAutoCreateRowSorter(true);
-        componentsTable.setPreferredSize(new java.awt.Dimension(1000, 1000));
-        tableScrollPane.setViewportView(componentsTable);
-
-        componentImageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        componentImageLabel.setText("Bild");
 
         hideDefaultCheckBox.setText("Standardaustattung ausblenden");
         hideDefaultCheckBox.addActionListener(new java.awt.event.ActionListener()
@@ -186,6 +191,102 @@ public class Main extends javax.swing.JFrame
                 hideDefaultCheckBoxActionPerformed(evt);
             }
         });
+
+        componentsTable.setAutoCreateRowSorter(true);
+        componentsTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][]
+            {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String []
+            {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane1.setViewportView(componentsTable);
+
+        componentImageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        componentImageLabel.setText("Bild");
+        componentImageLabel.setMaximumSize(new java.awt.Dimension(320, 180));
+        componentImageLabel.setMinimumSize(new java.awt.Dimension(320, 180));
+        componentImageLabel.setPreferredSize(new java.awt.Dimension(320, 180));
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(componentImageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(hideDefaultCheckBox, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                        .addComponent(searchTxt)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(clearSearchBtn))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addGap(5, 5, 5))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(searchTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(clearSearchBtn))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(hideDefaultCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(componentImageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(5, 5, 5))
+        );
+
+        jSplitPane1.setLeftComponent(jPanel3);
+
+        imageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        imageLabel.setText("Bild");
+
+        refreshBtn.setText("Aktualisieren");
+        refreshBtn.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                refreshBtnActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jSeparator3)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(refreshBtn)
+                        .addGap(0, 589, Short.MAX_VALUE)))
+                .addContainerGap())
+            .addComponent(imageLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(imageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(refreshBtn)
+                .addGap(5, 5, 5))
+        );
+
+        jSplitPane1.setRightComponent(jPanel4);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -208,25 +309,10 @@ public class Main extends javax.swing.JFrame
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(bodyCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(modelCombo, 0, 345, Short.MAX_VALUE)
+                        .addComponent(modelCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(newConfigurationBtn))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(tableScrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(searchTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(clearSearchBtn))
-                                .addComponent(componentImageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addComponent(hideDefaultCheckBox))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(imageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jSeparator4))))
+                    .addComponent(jSplitPane1))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -246,26 +332,8 @@ public class Main extends javax.swing.JFrame
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(imageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(140, 140, 140))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jSeparator3)
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(searchTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(clearSearchBtn))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(hideDefaultCheckBox)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(componentImageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                .addComponent(jSplitPane1)
+                .addContainerGap())
         );
 
         pack();
@@ -353,25 +421,115 @@ public class Main extends javax.swing.JFrame
 
     private void hideDefaultCheckBoxActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_hideDefaultCheckBoxActionPerformed
     {//GEN-HEADEREND:event_hideDefaultCheckBoxActionPerformed
-        updateSeletables(currentConfig);
+        updateSeletables();
     }//GEN-LAST:event_hideDefaultCheckBoxActionPerformed
+
+    private void refreshBtnActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_refreshBtnActionPerformed
+    {//GEN-HEADEREND:event_refreshBtnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_refreshBtnActionPerformed
+
+    private void tableChanged(TableModelEvent evt)
+    {
+        if(evt.getType() != TableModelEvent.UPDATE)
+        {
+            return;
+        }
+
+        for(int i = evt.getFirstRow(); i <= evt.getLastRow(); i++)
+        {
+            boolean selected = Boolean.TRUE.equals(componentsTableModel.getValueAt(i, 0));
+            String code = componentsTableModel.getValueAt(i, 1).toString();
+
+            for(VehicleComponent comp : selectables)
+            {
+                if(code.equals(comp.getId()))
+                {
+                    comp.setSelected(selected);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void selectionChanged(ListSelectionEvent evt)
+    {
+        if(evt.getValueIsAdjusting() || componentsTable.getSelectedRow() < 0)
+            return;
+
+        String selectedCode = componentsTableModel.getValueAt(componentsTable.getSelectedRow(), 1).toString();
+        VehicleComponent comp = selectables.firstWhere((c) -> selectedCode.equals(c.getId()));
+        String id = comp.getId();
+        componentImageLabel.setIcon(null);
+        componentImageLabel.setText("Lade Bild...");
+
+        new Thread(() ->
+        {
+            Map<String, String> links = MBConfigurator.getComponentImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId(), comp);
+            final BufferedImage image = links.isEmpty() ? null : download(links.values().iterator().next());
+
+            EventQueue.invokeLater(() ->
+            {
+                if(componentsTable.getSelectedRow() > 0
+                   && id.equals(componentsTableModel.getValueAt(componentsTable.getSelectedRow(), 1).toString()))
+                {
+                    componentImageLabel.setIcon(image == null ? null : new ImageIcon(image));
+                }
+            });
+        }).start();
+    }
 
     public void setCurrentConfig(Configuration config)
     {
-        updateSeletables(config);
+        selectables.clear();
+        Selectables select = MBConfigurator.getSelectibles(MARKET, config.getModelId(), config.getConfigurationId());
+        selectables.addAll(select.getVehicleComponents());
+        selectables.sort(null);
+        updateSeletables();
         currentConfig = config;
+
+        final String id = config.getConfigurationId();
+        imageLabel.setIcon(null);
+        imageLabel.setText("Lade Bild...");
+        new Thread(() ->
+        {
+            Map<String, String> links = MBConfigurator.getVehicleImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId());
+            final BufferedImage image = links.isEmpty() ? null : download(links.values().iterator().next());
+
+            EventQueue.invokeLater(() ->
+            {
+                if(currentConfig != null
+                   && id.equals(currentConfig.getConfigurationId()))
+                {
+                    imageLabel.setIcon(image == null ? null : new ImageIcon(image));
+                }
+            });
+        }).start();
     }
 
-    private void updateSeletables(Configuration config)
+    private static BufferedImage download(String url)
+    {
+        try
+        {
+            return ImageIO.read(new URL(url));
+        }
+        catch(IOException ex)
+        {
+            return null;
+        }
+    }
+
+    private void updateSeletables()
     {
         componentsTableModel.clear();
-        List<VehicleComponent> comps = MBConfigurator.getSelectibles(MARKET, config.getModelId(), config.getConfigurationId()).getVehicleComponents();
         if(hideDefaultCheckBox.isSelected())
         {
-            comps = new LinqList<>(comps).where(c -> !c.isStandard());
+            componentsTableModel.addAll(selectables.where(c -> !c.isStandard()));
         }
-        comps.sort((c1, c2) -> c1.getComponentSortId() - c2.getComponentSortId());
-        componentsTableModel.addAll(comps);
+        else
+        {
+            componentsTableModel.addAll(selectables);
+        }
     }
 
     private List<String> getSelectedClassIds()
@@ -413,16 +571,19 @@ public class Main extends javax.swing.JFrame
     private javax.swing.JTable componentsTable;
     private javax.swing.JCheckBox hideDefaultCheckBox;
     private javax.swing.JLabel imageLabel;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
-    private javax.swing.JSeparator jSeparator4;
+    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JComboBox<CoolComboBoxModel.Item<Model>> modelCombo;
     private javax.swing.JButton newConfigurationBtn;
     private javax.swing.JButton openBtn;
+    private javax.swing.JButton refreshBtn;
     private javax.swing.JButton saveAsBtn;
     private javax.swing.JButton saveBtn;
     private javax.swing.JTextField searchTxt;
-    private javax.swing.JScrollPane tableScrollPane;
     // End of variables declaration//GEN-END:variables
 }

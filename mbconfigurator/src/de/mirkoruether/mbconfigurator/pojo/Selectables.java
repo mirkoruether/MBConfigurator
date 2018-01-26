@@ -159,9 +159,32 @@ public class Selectables implements Serializable
             result.setComponentCategories(GsonUtils.getListFromArray(obj.get("componentCategories"), context, ComponentCategory.class));
             result.setVehicleComponents(GsonUtils.getListFromObjectList(obj.get("vehicleComponents"), context, VehicleComponent.class));
 
-            result.setLinks(context.deserialize(obj.get("_links"), Links.class));
+            for(ComponentCategory cat : result.getComponentCategories())
+            {
+                setCategoryRecursive(cat, result.getVehicleComponents());
+            }
 
+            result.setLinks(context.deserialize(obj.get("_links"), Links.class));
             return result;
+        }
+
+        private void setCategoryRecursive(ComponentCategory cat, List<VehicleComponent> list)
+        {
+            for(String compId : cat.getComponentIds())
+            {
+                for(VehicleComponent comp : list)
+                {
+                    if(compId.equals(comp.getId()))
+                    {
+                        comp.setCategory(cat);
+                    }
+                }
+            }
+
+            for(ComponentCategory subCat : cat.getSubcategories())
+            {
+                setCategoryRecursive(subCat, list);
+            }
         }
     }
 }

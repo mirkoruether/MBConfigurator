@@ -25,6 +25,9 @@ package de.mirkoruether.mbconfigurator.api;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import de.mirkoruether.mbconfigurator.pojo.Configuration;
 import de.mirkoruether.mbconfigurator.pojo.IncludedComponents;
@@ -34,6 +37,7 @@ import de.mirkoruether.mbconfigurator.pojo.Model;
 import de.mirkoruether.mbconfigurator.pojo.Selectables;
 import de.mirkoruether.mbconfigurator.pojo.VehicleBody;
 import de.mirkoruether.mbconfigurator.pojo.VehicleClass;
+import de.mirkoruether.mbconfigurator.pojo.VehicleComponent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -65,8 +69,13 @@ public class MBConfigurator
                     .setPrettyPrinting()
                     .setLenient()
                     .create();
+
+            String certificateRessourcePath = "/res/cert";
+            CertificateManager certificateManager = new CertificateManager("./sslkeystore.jks", "changeit");
+            certificateManager.addCustomCertificate(certificateRessourcePath, "europestarconnect-ceidaimlercom");
+            CustomTrustManager.getInstance().register(certificateManager);
         }
-        catch(IOException ex)
+        catch(Exception ex)
         {
             throw new ExceptionInInitializerError(ex);
         }
@@ -117,6 +126,69 @@ public class MBConfigurator
     {
         String response = request("markets/" + market + "/models/" + modelId + "/configurations/" + configurationId + "/selectables");
         return fromJson(response, Selectables.class);
+    }
+
+    public static Map<String, String> getVehicleImageLinks(String market, String modelId, String configurationId)
+    {
+        String response = request("markets/" + market + "/models/" + modelId
+                                  + "/configurations/" + configurationId
+                                  + "/images/vehicle");
+
+        return getImageLinks(response);
+    }
+
+    public static Map<String, String> getComponentImageLinks(String market, String modelId, String configurationId, VehicleComponent comp)
+    {
+        String response = request("markets/" + market + "/models/" + modelId
+                                  + "/configurations/" + configurationId
+                                  + "/images/components/equipments/" + comp.getCode());
+
+        return getImageLinks(response);
+    }
+
+    private static Map<String, String> getImageLinks(String response)
+    {
+        JsonObject obj = GSON.fromJson(response, JsonObject.class);
+        HashMap<String, String> result = new HashMap<>();
+        if(obj != null)
+        {
+            searchForElement("url", "", obj, result);
+        }
+
+        return result;
+    }
+
+    private static void searchForElement(String searchFor, String currentName, JsonElement element, Map<String, String> addTo)
+    {
+        if(element.isJsonObject())
+        {
+            JsonObject obj = element.getAsJsonObject();
+            for(Map.Entry<String, JsonElement> e : obj.entrySet())
+            {
+                if(e.getValue().isJsonPrimitive())
+                {
+                    if(searchFor.equals(e.getKey()))
+                    {
+                        addTo.put(currentName, e.getValue().getAsString());
+                    }
+                }
+                else
+                {
+                    searchForElement(searchFor, currentName + "/" + e.getKey(), e.getValue(), addTo);
+                }
+            }
+        }
+        else if(element.isJsonArray())
+        {
+            JsonArray arr = element.getAsJsonArray();
+            for(int i = 0; i < arr.size(); i++)
+            {
+                if(!arr.get(i).isJsonPrimitive())
+                {
+                    searchForElement(searchFor, currentName + "/" + i, arr.get(i), addTo);
+                }
+            }
+        }
     }
 
     public static <T> T fromLink(Links links, String linkKey, Class<T> clazz)

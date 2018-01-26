@@ -29,7 +29,7 @@ import java.io.Serializable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class VehicleComponent implements Serializable
+public class VehicleComponent implements Serializable, Comparable<VehicleComponent>
 {
     @SerializedName("id")
     @Expose
@@ -76,6 +76,10 @@ public class VehicleComponent implements Serializable
     @SerializedName("_links")
     @Expose
     private Links links;
+    //Not from API
+    @SerializedName("category")
+    @Expose
+    private ComponentCategory category;
 
     private final static long serialVersionUID = -5612570182374988247L;
 
@@ -121,6 +125,16 @@ public class VehicleComponent implements Serializable
         this.hidden = hidden;
         this.pseudoCode = pseudoCode;
         this.includedComponents = includedComponents;
+    }
+
+    @Override
+    public int compareTo(VehicleComponent o)
+    {
+        if(o.category == null || category == null || category.equals(o.category))
+        {
+            return componentSortId - o.componentSortId;
+        }
+        return category.getCategoryId().compareTo(o.category.getCategoryId());
     }
 
     public String getId()
@@ -360,6 +374,22 @@ public class VehicleComponent implements Serializable
     public VehicleComponent withLinks(Links links)
     {
         this.links = links;
+        return this;
+    }
+
+    public ComponentCategory getCategory()
+    {
+        return category;
+    }
+
+    public void setCategory(ComponentCategory category)
+    {
+        this.category = category;
+    }
+
+    public VehicleComponent withCategory(ComponentCategory category)
+    {
+        this.category = category;
         return this;
     }
 
