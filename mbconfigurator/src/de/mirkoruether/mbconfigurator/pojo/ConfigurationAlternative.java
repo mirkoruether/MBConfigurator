@@ -30,7 +30,7 @@ import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class ConfigurationAlternatives implements Serializable
+public class ConfigurationAlternative implements Serializable
 {
     @SerializedName("marketId")
     @Expose
@@ -62,7 +62,7 @@ public class ConfigurationAlternatives implements Serializable
      * No args constructor for use in serialization
      *
      */
-    public ConfigurationAlternatives()
+    public ConfigurationAlternative()
     {
     }
 
@@ -77,7 +77,7 @@ public class ConfigurationAlternatives implements Serializable
      * @param removedComponents
      * @param configurationId
      */
-    public ConfigurationAlternatives(String marketId, String modelId, String configurationId,
+    public ConfigurationAlternative(String marketId, String modelId, String configurationId,
                                      List<VehicleComponent> addedComponents, List<VehicleComponent> removedComponents,
                                      List<VehicleComponent> updatedComponents, PriceInformation priceInformation, Links links)
     {
@@ -102,7 +102,7 @@ public class ConfigurationAlternatives implements Serializable
         this.marketId = marketId;
     }
 
-    public ConfigurationAlternatives withMarketId(String marketId)
+    public ConfigurationAlternative withMarketId(String marketId)
     {
         this.marketId = marketId;
         return this;
@@ -118,7 +118,7 @@ public class ConfigurationAlternatives implements Serializable
         this.modelId = modelId;
     }
 
-    public ConfigurationAlternatives withModelId(String modelId)
+    public ConfigurationAlternative withModelId(String modelId)
     {
         this.modelId = modelId;
         return this;
@@ -134,7 +134,7 @@ public class ConfigurationAlternatives implements Serializable
         this.configurationId = configurationId;
     }
 
-    public ConfigurationAlternatives withConfigurationId(String configurationId)
+    public ConfigurationAlternative withConfigurationId(String configurationId)
     {
         this.configurationId = configurationId;
         return this;
@@ -150,7 +150,7 @@ public class ConfigurationAlternatives implements Serializable
         this.addedComponents = addedComponents;
     }
 
-    public ConfigurationAlternatives withAddedComponents(List<VehicleComponent> addedComponents)
+    public ConfigurationAlternative withAddedComponents(List<VehicleComponent> addedComponents)
     {
         this.addedComponents = addedComponents;
         return this;
@@ -166,7 +166,7 @@ public class ConfigurationAlternatives implements Serializable
         this.removedComponents = removedComponents;
     }
 
-    public ConfigurationAlternatives withRemovedComponents(List<VehicleComponent> removedComponents)
+    public ConfigurationAlternative withRemovedComponents(List<VehicleComponent> removedComponents)
     {
         this.removedComponents = removedComponents;
         return this;
@@ -182,7 +182,7 @@ public class ConfigurationAlternatives implements Serializable
         this.updatedComponents = updatedComponents;
     }
 
-    public ConfigurationAlternatives withUpdatedComponents(List<VehicleComponent> updatedComponents)
+    public ConfigurationAlternative withUpdatedComponents(List<VehicleComponent> updatedComponents)
     {
         this.updatedComponents = updatedComponents;
         return this;
@@ -198,7 +198,7 @@ public class ConfigurationAlternatives implements Serializable
         this.priceInformation = priceInformation;
     }
 
-    public ConfigurationAlternatives withPriceInformation(PriceInformation priceInformation)
+    public ConfigurationAlternative withPriceInformation(PriceInformation priceInformation)
     {
         this.priceInformation = priceInformation;
         return this;
@@ -214,7 +214,7 @@ public class ConfigurationAlternatives implements Serializable
         this.links = links;
     }
 
-    public ConfigurationAlternatives withLinks(Links links)
+    public ConfigurationAlternative withLinks(Links links)
     {
         this.links = links;
         return this;
@@ -242,11 +242,11 @@ public class ConfigurationAlternatives implements Serializable
         {
             return true;
         }
-        if((other instanceof ConfigurationAlternatives) == false)
+        if((other instanceof ConfigurationAlternative) == false)
         {
             return false;
         }
-        ConfigurationAlternatives rhs = ((ConfigurationAlternatives)other);
+        ConfigurationAlternative rhs = ((ConfigurationAlternative)other);
         return new EqualsBuilder()
                 .append(modelId, rhs.modelId)
                 .append(marketId, rhs.marketId)

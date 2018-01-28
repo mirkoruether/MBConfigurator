@@ -73,7 +73,7 @@ public class ChangeSet
         String added = (addedComponetIds == null || addedComponetIds.isEmpty()) ? ""
                        : "+" + CodeParser.build(addedComponetIds);
         String removed = (removedComponetIds == null || removedComponetIds.isEmpty()) ? ""
-                         : "-" + CodeParser.build(addedComponetIds);
+                         : "-" + CodeParser.build(removedComponetIds);
         if(!added.isEmpty() && !removed.isEmpty())
         {
             return added + "," + removed;

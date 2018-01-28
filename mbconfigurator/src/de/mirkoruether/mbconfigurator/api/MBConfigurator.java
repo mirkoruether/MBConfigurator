@@ -30,6 +30,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import de.mirkoruether.mbconfigurator.pojo.Configuration;
+import de.mirkoruether.mbconfigurator.pojo.ConfigurationAlternative;
 import de.mirkoruether.mbconfigurator.pojo.IncludedComponents;
 import de.mirkoruether.mbconfigurator.pojo.Links;
 import de.mirkoruether.mbconfigurator.pojo.Market;
@@ -118,13 +119,26 @@ public class MBConfigurator
 
     public static Configuration getInitialConfiguration(String market, String modelId)
     {
-        String response = request("markets/" + market + "/models/" + modelId + "/configurations/initial");
+        String response = request("markets/" + market
+                                  + "/models/" + modelId
+                                  + "/configurations/initial");
+        return fromJson(response, Configuration.class);
+    }
+
+    public static Configuration getConfiguration(String market, String modelId, String configurationId)
+    {
+        String response = request("markets/" + market
+                                  + "/models/" + modelId
+                                  + "/configurations/" + configurationId);
         return fromJson(response, Configuration.class);
     }
 
     public static Selectables getSelectibles(String market, String modelId, String configurationId)
     {
-        String response = request("markets/" + market + "/models/" + modelId + "/configurations/" + configurationId + "/selectables");
+        String response = request("markets/" + market
+                                  + "/models/" + modelId
+                                  + "/configurations/" + configurationId
+                                  + "/selectables");
         return fromJson(response, Selectables.class);
     }
 
@@ -135,6 +149,15 @@ public class MBConfigurator
                                   + "/images/vehicle");
 
         return getImageLinks(response);
+    }
+
+    public static ConfigurationAlternative[] getAlternatives(String market, String modelId, String configurationId, String changeSet)
+    {
+        String response = request("markets/" + market
+                                  + "/models/" + modelId
+                                  + "/configurations/" + configurationId
+                                  + "/alternatives/" + changeSet);
+        return fromJson(response, ConfigurationAlternative[].class);
     }
 
     public static Map<String, String> getComponentImageLinks(String market, String modelId, String configurationId, VehicleComponent comp)
@@ -292,7 +315,7 @@ public class MBConfigurator
         }
         catch(IOException ex)
         {
-            throw new RuntimeException("IOException occured", ex);
+            throw new RuntimeException(ex);
         }
     }
 

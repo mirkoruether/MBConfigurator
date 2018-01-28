@@ -1,7 +1,9 @@
 package de.mirkoruether.mbconfigurator.gui;
 
+import de.mirkoruether.mbconfigurator.api.ChangeSet;
 import de.mirkoruether.mbconfigurator.api.MBConfigurator;
 import de.mirkoruether.mbconfigurator.pojo.Configuration;
+import de.mirkoruether.mbconfigurator.pojo.ConfigurationAlternative;
 import de.mirkoruether.mbconfigurator.pojo.Model;
 import de.mirkoruether.mbconfigurator.pojo.Selectables;
 import de.mirkoruether.mbconfigurator.pojo.VehicleBody;
@@ -13,20 +15,35 @@ import de.mirkoruether.util.gui.CoolTableModel;
 import de.mirkoruether.util.gui.ImageHolder;
 import java.awt.EventQueue;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableModelEvent;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
 public class Main extends javax.swing.JFrame
 {
@@ -70,6 +87,8 @@ public class Main extends javax.swing.JFrame
 
         modelComboModel = new CoolComboBoxModel<>((m) -> m.getName(), true);
         modelCombo.setModel(modelComboModel);
+
+        addChangeListener(searchTxt, evt -> searchTxtTextChanged(evt));
 
         componentsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         componentsTableModel = new CoolTableModel<VehicleComponent>()
@@ -182,6 +201,13 @@ public class Main extends javax.swing.JFrame
         jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
         clearSearchBtn.setText("X");
+        clearSearchBtn.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                clearSearchBtnActionPerformed(evt);
+            }
+        });
 
         hideDefaultCheckBox.setText("Standardaustattung ausblenden");
         hideDefaultCheckBox.addActionListener(new java.awt.event.ActionListener()
@@ -426,8 +452,40 @@ public class Main extends javax.swing.JFrame
 
     private void refreshBtnActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_refreshBtnActionPerformed
     {//GEN-HEADEREND:event_refreshBtnActionPerformed
-        // TODO add your handling code here:
+        try
+        {
+            ChangeSet cs = ChangeSet.build(new LinqList<>(currentConfig.getVehicleComponents()).select(c -> c.getId()),
+                                           selectables.where(c -> c.isSelected()).select(c -> c.getId()));
+            String newConfigurationId = currentConfig.getConfigurationId();
+
+            if(!cs.isEmpty())
+            {
+                ConfigurationAlternative[] alts = MBConfigurator.getAlternatives(MARKET, currentConfig.getModelId(),
+                                                                                 currentConfig.getConfigurationId(), cs.toString());
+
+                ConfigurationAlternative selectedAlt = alts[0];
+                newConfigurationId = selectedAlt.getConfigurationId();
+            }
+
+            Configuration conf = MBConfigurator.getConfiguration(MARKET, currentConfig.getModelId(), newConfigurationId);
+            setCurrentConfig(conf);
+        }
+        catch(Exception ex)
+        {
+            JOptionPane.showMessageDialog(this, "Unerwarteter Fehler! " + ex.getMessage());
+            ex.printStackTrace();
+        }
     }//GEN-LAST:event_refreshBtnActionPerformed
+
+    private void clearSearchBtnActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_clearSearchBtnActionPerformed
+    {//GEN-HEADEREND:event_clearSearchBtnActionPerformed
+        searchTxt.setText("");
+    }//GEN-LAST:event_clearSearchBtnActionPerformed
+
+    private void searchTxtTextChanged(ChangeEvent evt)
+    {
+        updateSeletables();
+    }
 
     private void tableChanged(TableModelEvent evt)
     {
@@ -459,24 +517,16 @@ public class Main extends javax.swing.JFrame
 
         String selectedCode = componentsTableModel.getValueAt(componentsTable.getSelectedRow(), 1).toString();
         VehicleComponent comp = selectables.firstWhere((c) -> selectedCode.equals(c.getId()));
-        String id = comp.getId();
-        componentImageLabel.setIcon(null);
-        componentImageLabel.setText("Lade Bild...");
+        final String id = comp.getId();
 
-        new Thread(() ->
-        {
-            Map<String, String> links = MBConfigurator.getComponentImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId(), comp);
-            final BufferedImage image = links.isEmpty() ? null : download(links.values().iterator().next());
-
-            EventQueue.invokeLater(() ->
-            {
-                if(componentsTable.getSelectedRow() > 0
-                   && id.equals(componentsTableModel.getValueAt(componentsTable.getSelectedRow(), 1).toString()))
-                {
-                    componentImageLabel.setIcon(image == null ? null : new ImageIcon(image));
-                }
-            });
-        }).start();
+        downloadAndSetImage(componentImageLabel,
+                            () ->
+                    {
+                        Map<String, String> links = MBConfigurator.getComponentImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId(), comp);
+                        return links.isEmpty() ? null : download(links.values().iterator().next());
+                    },
+                            () -> componentsTable.getSelectedRow() > 0
+                                  && id.equals(componentsTableModel.getValueAt(componentsTable.getSelectedRow(), 1).toString()), 1);
     }
 
     public void setCurrentConfig(Configuration config)
@@ -489,19 +539,48 @@ public class Main extends javax.swing.JFrame
         currentConfig = config;
 
         final String id = config.getConfigurationId();
-        imageLabel.setIcon(null);
-        imageLabel.setText("Lade Bild...");
+        downloadAndSetImage(imageLabel,
+                            () ->
+                    {
+                        Map<String, String> links = MBConfigurator.getVehicleImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId());
+                        return links.isEmpty() ? null : download(links.values().iterator().next());
+                    },
+                            () -> currentConfig != null && id.equals(currentConfig.getConfigurationId()), 5);
+    }
+
+    private static void downloadAndSetImage(JLabel label, Supplier<BufferedImage> supplier, Supplier<Boolean> checkAfterDownload, int retrys)
+    {
+        label.setIcon(null);
+        label.setText("Lade Bild...");
         new Thread(() ->
         {
-            Map<String, String> links = MBConfigurator.getVehicleImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId());
-            final BufferedImage image = links.isEmpty() ? null : download(links.values().iterator().next());
+            BufferedImage image = null;
+            boolean error = true;
+            int count = 0;
+            while(error && count++ < retrys)
+            {
+                try
+                {
+                    image = supplier.get();
+                    error = false;
+                }
+                catch(Exception ex)
+                {
+                    sleep(500);
+                }
+            }
 
+            final BufferedImage finalImage = image;
+            final boolean finalError = error;
             EventQueue.invokeLater(() ->
             {
-                if(currentConfig != null
-                   && id.equals(currentConfig.getConfigurationId()))
+                if(checkAfterDownload.get())
                 {
-                    imageLabel.setIcon(image == null ? null : new ImageIcon(image));
+                    label.setIcon(finalImage == null ? null : new ImageIcon(finalImage));
+                    if(finalError)
+                    {
+                        label.setText("Fehler beim Laden des Bilds");
+                    }
                 }
             });
         }).start();
@@ -521,15 +600,31 @@ public class Main extends javax.swing.JFrame
 
     private void updateSeletables()
     {
+        final LinqList<String> searchWords = new LinqList<>(searchTxt.getText().split(" "))
+                .where(s -> !s.isEmpty()).select(s -> s.toUpperCase());
+
+        Predicate<VehicleComponent> pred = (c) ->
+        {
+            if(c == null)
+                return false;
+            if(hideDefaultCheckBox.isSelected() && c.isStandard())
+                return false;
+
+            String name = c.getName() == null ? "" : c.getName().toUpperCase();
+            String code = c.getId() == null ? "" : c.getId().toUpperCase();
+            for(String word : searchWords)
+            {
+                if(!(name.contains(word) || code.contains(word)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
         componentsTableModel.clear();
-        if(hideDefaultCheckBox.isSelected())
-        {
-            componentsTableModel.addAll(selectables.where(c -> !c.isStandard()));
-        }
-        else
-        {
-            componentsTableModel.addAll(selectables);
-        }
+        componentsTableModel.addAll(selectables.where(pred));
     }
 
     private List<String> getSelectedClassIds()
@@ -555,6 +650,81 @@ public class Main extends javax.swing.JFrame
     {
         //TODO implement
         return true;
+    }
+
+    /**
+     * Installs a listener to receive notification when the text of any
+     * {@code JTextComponent} is changed. Internally, it installs a
+     * {@link DocumentListener} on the text component's {@link Document},
+     * and a {@link PropertyChangeListener} on the text component to detect
+     * if the {@code Document} itself is replaced.
+     *
+     * @param text           any text component, such as a {@link JTextField}
+     *                       or {@link JTextArea}
+     * @param changeListener a listener to receieve {@link ChangeEvent}s
+     *                       when the text is changed; the source object for the events
+     *                       will be the text component
+     * @throws NullPointerException if either parameter is null
+     */
+    public static void addChangeListener(JTextComponent text, ChangeListener changeListener)
+    {
+        Objects.requireNonNull(text);
+        Objects.requireNonNull(changeListener);
+        DocumentListener dl = new DocumentListener()
+        {
+            private int lastChange = 0, lastNotifiedChange = 0;
+
+            @Override
+            public void insertUpdate(DocumentEvent e)
+            {
+                changedUpdate(e);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e)
+            {
+                changedUpdate(e);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e)
+            {
+                lastChange++;
+                SwingUtilities.invokeLater(() ->
+                {
+                    if(lastNotifiedChange != lastChange)
+                    {
+                        lastNotifiedChange = lastChange;
+                        changeListener.stateChanged(new ChangeEvent(text));
+                    }
+                });
+            }
+        };
+        text.addPropertyChangeListener("document", (PropertyChangeEvent e) ->
+                               {
+                                   Document d1 = (Document)e.getOldValue();
+                                   Document d2 = (Document)e.getNewValue();
+                                   if(d1 != null)
+                                       d1.removeDocumentListener(dl);
+                                   if(d2 != null)
+                                       d2.addDocumentListener(dl);
+                                   dl.changedUpdate(null);
+                               });
+        Document d = text.getDocument();
+        if(d != null)
+            d.addDocumentListener(dl);
+    }
+
+    private static void sleep(long millis)
+    {
+        try
+        {
+            Thread.sleep(millis);
+        }
+        catch(InterruptedException ex)
+        {
+            throw new RuntimeException(ex);
+        }
     }
 
     public static void main(String args[]) throws Exception

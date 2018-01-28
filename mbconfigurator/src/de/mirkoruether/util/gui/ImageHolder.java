@@ -60,22 +60,22 @@ public class ImageHolder extends JLabel
     @Override
     public void setIcon(Icon icon)
     {
-        if(icon == null || !(icon instanceof ImageIcon))
-        {
-            currentIcon = null;
-            super.setIcon(icon);
-            return;
-        }
-        currentIcon = (ImageIcon)icon;
-
         if(icon == null)
         {
             super.setIcon(null);
             super.setText("Kein Bild");
             return;
         }
-        super.setText("");
 
+        if(!(icon instanceof ImageIcon))
+        {
+            currentIcon = null;
+            super.setIcon(icon);
+            return;
+        }
+
+        currentIcon = (ImageIcon)icon;
+        super.setText("");
         double scaleFactor = Math.min((double)getWidth() / icon.getIconWidth(),
                                       (double)getHeight() / icon.getIconHeight());
         int newWidth = (int)(scaleFactor * icon.getIconWidth());
