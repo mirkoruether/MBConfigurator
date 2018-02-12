@@ -1,6 +1,7 @@
 package de.mirkoruether.util.gui;
 
 import de.mirkoruether.util.LinqList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -73,13 +74,23 @@ public class CoolComboBoxModel<T> extends DefaultComboBoxModel<CoolComboBoxModel
         return result;
     }
 
-    public void setAll(List<T> list)
+    public void setAll(List<T> list, boolean sort)
     {
+        if(sort)
+        {
+            list.sort((e1, e2) -> func.apply(e1).compareTo(func.apply(e2)));
+        }
+
         removeAllElements();
         for(T obj : list)
         {
             add(obj);
         }
+    }
+
+    public void setAll(T[] arr, boolean sort)
+    {
+        setAll(Arrays.asList(arr), sort);
     }
 
     public Function<T, String> getFunc()

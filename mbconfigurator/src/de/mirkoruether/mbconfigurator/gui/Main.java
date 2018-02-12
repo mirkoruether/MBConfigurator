@@ -14,19 +14,16 @@ import de.mirkoruether.util.gui.CoolComboBoxModel;
 import de.mirkoruether.util.gui.CoolTableModel;
 import de.mirkoruether.util.gui.ImageHolder;
 import java.awt.EventQueue;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import javax.imageio.ImageIO;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -45,18 +42,16 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-public class Main extends javax.swing.JFrame
+public class Main extends javax.swing.JFrame implements WindowListener
 {
     public static final String MARKET = "de_DE";
 
     private static final long serialVersionUID = 1L;
 
-    private final DefaultComboBoxModel<String> classComboModel;
+    private final CoolComboBoxModel<VehicleClass> classComboModel;
     private final CoolComboBoxModel<VehicleBody> bodyComboModel;
     private final CoolComboBoxModel<Model> modelComboModel;
     private final CoolTableModel<VehicleComponent> componentsTableModel;
-
-    private final LinqList<VehicleClass> classes;
 
     private Configuration currentConfig = null;
     private LinqList<VehicleComponent> selectables = new LinqList<>();
@@ -65,27 +60,16 @@ public class Main extends javax.swing.JFrame
     public Main()
     {
         initComponents();
-        classes = new LinqList<>(MBConfigurator.getVehicleClasses(MARKET, null, null));
-        LinqList<String> classNames = new LinqList<String>();
-        for(VehicleClass cl : classes)
-        {
-            String className = cl == null ? null : cl.getClassName();
-            if(cl == null)
-                continue;
-            if(!classNames.contains(className))
-            {
-                classNames.add(className);
-            }
-        }
-        classNames.sort(null);
 
-        classComboModel = new DefaultComboBoxModel<String>(classNames.toArray(String.class));
+        addWindowListener(this);
+
+        classComboModel = new CoolComboBoxModel<>((c) -> c.getClassName() + " (BR " + c.getClassId() + ")", true);
         classCombo.setModel(classComboModel);
 
         bodyComboModel = new CoolComboBoxModel<>((b) -> b.getBodyName(), true);
         bodyCombo.setModel(bodyComboModel);
 
-        modelComboModel = new CoolComboBoxModel<>((m) -> m.getName(), true);
+        modelComboModel = new CoolComboBoxModel<>((m) -> m.getName() + " (Baumuster " + m.getBaumuster() + ")", true);
         modelCombo.setModel(modelComboModel);
 
         addChangeListener(searchTxt, evt -> searchTxtTextChanged(evt));
@@ -103,19 +87,64 @@ public class Main extends javax.swing.JFrame
         classCombo.setSelectedItem(null);
 
         saveManager = new SaveManager((f) -> saveConfiguration(f),
-                                      () ->
-                              {
-                                  JFileChooser fc = new JFileChooser();
-                                  if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION)
-                                  {
-                                      File f = fc.getSelectedFile();
-                                      if(saveConfiguration(f))
-                                          return f;
-                                  }
-                                  return null;
+                                      ()
+                                      ->
+                                      {
+                                          JFileChooser fc = new JFileChooser();
+                                          if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION)
+                                          {
+                                              File f = fc.getSelectedFile();
+                                              if(saveConfiguration(f))
+                                                  return f;
+                                          }
+                                          return null;
                               },
                                       () -> SaveManager.DialogResult.Discard);
         pack();
+
+        new Thread(()
+                ->
+                {
+                    VehicleClass[] classes = MBConfigurator.getVehicleClasses(MARKET, null, null);
+                    EventQueue.invokeLater(() -> classComboModel.setAll(classes, true));
+        }).start();
+    }
+
+    @Override
+    public void windowActivated(WindowEvent e)
+    {
+    }
+
+    @Override
+    public void windowClosed(WindowEvent e)
+    {
+    }
+
+    @Override
+    public void windowClosing(WindowEvent e)
+    {
+        MBConfigurator.getCache().saveMaps();
+        System.exit(0);
+    }
+
+    @Override
+    public void windowDeactivated(WindowEvent e)
+    {
+    }
+
+    @Override
+    public void windowDeiconified(WindowEvent e)
+    {
+    }
+
+    @Override
+    public void windowIconified(WindowEvent e)
+    {
+    }
+
+    @Override
+    public void windowOpened(WindowEvent e)
+    {
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -144,7 +173,7 @@ public class Main extends javax.swing.JFrame
         jSeparator3 = new javax.swing.JSeparator();
         refreshBtn = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
         classCombo.addActionListener(new java.awt.event.ActionListener()
         {
@@ -331,9 +360,9 @@ public class Main extends javax.swing.JFrame
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(classCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(classCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(bodyCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(bodyCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(modelCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -368,18 +397,15 @@ public class Main extends javax.swing.JFrame
     private void classComboActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_classComboActionPerformed
     {//GEN-HEADEREND:event_classComboActionPerformed
         bodyComboModel.removeAllElements();
-        List<String> selectedClassIds = getSelectedClassIds();
-        if(!selectedClassIds.isEmpty())
+        VehicleClass selectedClass = classComboModel.getSelected();
+        String selectedClassId = selectedClass == null ? null : selectedClass.getClassId();
+        if(selectedClassId != null)
         {
-            new Thread(() ->
-            {
-                LinqList<VehicleBody> bodies = new LinqList<>();
-                for(String id : selectedClassIds)
-                {
-                    bodies.addAll(MBConfigurator.getVehicleBodies(MARKET, null, id));
-                }
-                bodies.sort((b1, b2) -> b1.getBodyName().compareTo(b2.getBodyName()));
-                EventQueue.invokeLater(() -> bodyComboModel.setAll(bodies));
+            new Thread(()
+                    ->
+                    {
+                        VehicleBody[] bodies = MBConfigurator.getVehicleBodies(MARKET, null, selectedClassId);
+                        EventQueue.invokeLater(() -> bodyComboModel.setAll(bodies, true));
             }).start();
         }
     }//GEN-LAST:event_classComboActionPerformed
@@ -387,22 +413,19 @@ public class Main extends javax.swing.JFrame
     private void bodyComboActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_bodyComboActionPerformed
     {//GEN-HEADEREND:event_bodyComboActionPerformed
         modelComboModel.removeAllElements();
-        List<String> selectedClassIds = getSelectedClassIds();
+        VehicleClass selectedClass = classComboModel.getSelected();
         VehicleBody selectedBody = bodyComboModel.getSelected();
+        String selectedClassId = selectedClass == null ? null : selectedClass.getClassId();
         String selectedBodyId = selectedBody == null ? null : selectedBody.getBodyId();
 
-        if(!selectedClassIds.isEmpty()
+        if(selectedClassId != null && !selectedClassId.trim().isEmpty()
            && selectedBodyId != null && !selectedBodyId.trim().isEmpty())
         {
-            new Thread(() ->
-            {
-                LinqList<Model> models = new LinqList<>();
-                for(String id : selectedClassIds)
-                {
-                    models.addAll(MBConfigurator.getModels(MARKET, null, id, selectedBodyId));
-                }
-                models.sort((m1, m2) -> m1.getName().compareTo(m2.getName()));
-                EventQueue.invokeLater(() -> modelComboModel.setAll(models));
+            new Thread(()
+                    ->
+                    {
+                        Model[] models = MBConfigurator.getModels(MARKET, null, selectedClassId, selectedBodyId);
+                        EventQueue.invokeLater(() -> modelComboModel.setAll(models, true));
             }).start();
         }
     }//GEN-LAST:event_bodyComboActionPerformed
@@ -520,10 +543,11 @@ public class Main extends javax.swing.JFrame
         final String id = comp.getId();
 
         downloadAndSetImage(componentImageLabel,
-                            () ->
-                    {
-                        Map<String, String> links = MBConfigurator.getComponentImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId(), comp);
-                        return links.isEmpty() ? null : download(links.values().iterator().next());
+                            ()
+                            ->
+                            {
+                                Map<String, String> links = MBConfigurator.getComponentImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId(), comp);
+                                return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
                     },
                             () -> componentsTable.getSelectedRow() > 0
                                   && id.equals(componentsTableModel.getValueAt(componentsTable.getSelectedRow(), 1).toString()), 1);
@@ -540,10 +564,11 @@ public class Main extends javax.swing.JFrame
 
         final String id = config.getConfigurationId();
         downloadAndSetImage(imageLabel,
-                            () ->
-                    {
-                        Map<String, String> links = MBConfigurator.getVehicleImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId());
-                        return links.isEmpty() ? null : download(links.values().iterator().next());
+                            ()
+                            ->
+                            {
+                                Map<String, String> links = MBConfigurator.getVehicleImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId());
+                                return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
                     },
                             () -> currentConfig != null && id.equals(currentConfig.getConfigurationId()), 5);
     }
@@ -552,50 +577,40 @@ public class Main extends javax.swing.JFrame
     {
         label.setIcon(null);
         label.setText("Lade Bild...");
-        new Thread(() ->
-        {
-            BufferedImage image = null;
-            boolean error = true;
-            int count = 0;
-            while(error && count++ < retrys)
-            {
-                try
+        new Thread(()
+                ->
                 {
-                    image = supplier.get();
-                    error = false;
-                }
-                catch(Exception ex)
-                {
-                    sleep(500);
-                }
-            }
-
-            final BufferedImage finalImage = image;
-            final boolean finalError = error;
-            EventQueue.invokeLater(() ->
-            {
-                if(checkAfterDownload.get())
-                {
-                    label.setIcon(finalImage == null ? null : new ImageIcon(finalImage));
-                    if(finalError)
+                    BufferedImage image = null;
+                    boolean error = true;
+                    int count = 0;
+                    while(error && count++ < retrys)
                     {
-                        label.setText("Fehler beim Laden des Bilds");
+                        try
+                        {
+                            image = supplier.get();
+                            error = false;
+                        }
+                        catch(Exception ex)
+                        {
+                            sleep(500);
+                        }
                     }
-                }
-            });
-        }).start();
-    }
 
-    private static BufferedImage download(String url)
-    {
-        try
-        {
-            return ImageIO.read(new URL(url));
-        }
-        catch(IOException ex)
-        {
-            return null;
-        }
+                    final BufferedImage finalImage = image;
+                    final boolean finalError = error;
+                    EventQueue.invokeLater(()
+                            ->
+                            {
+                                if(checkAfterDownload.get())
+                                {
+                                    label.setIcon(finalImage == null ? null : new ImageIcon(finalImage));
+                                    if(finalError)
+                                    {
+                                        label.setText("Fehler beim Laden des Bilds");
+                                    }
+                                }
+                    });
+        }).start();
     }
 
     private void updateSeletables()
@@ -603,47 +618,29 @@ public class Main extends javax.swing.JFrame
         final LinqList<String> searchWords = new LinqList<>(searchTxt.getText().split(" "))
                 .where(s -> !s.isEmpty()).select(s -> s.toUpperCase());
 
-        Predicate<VehicleComponent> pred = (c) ->
-        {
-            if(c == null)
-                return false;
-            if(hideDefaultCheckBox.isSelected() && c.isStandard())
-                return false;
-
-            String name = c.getName() == null ? "" : c.getName().toUpperCase();
-            String code = c.getId() == null ? "" : c.getId().toUpperCase();
-            for(String word : searchWords)
-            {
-                if(!(name.contains(word) || code.contains(word)))
+        Predicate<VehicleComponent> pred = (c)
+                ->
                 {
-                    return false;
-                }
-            }
+                    if(c == null)
+                        return false;
+                    if(hideDefaultCheckBox.isSelected() && c.isStandard())
+                        return false;
 
-            return true;
+                    String name = c.getName() == null ? "" : c.getName().toUpperCase();
+                    String code = c.getId() == null ? "" : c.getId().toUpperCase();
+                    for(String word : searchWords)
+                    {
+                        if(!(name.contains(word) || code.contains(word)))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
         };
 
         componentsTableModel.clear();
         componentsTableModel.addAll(selectables.where(pred));
-    }
-
-    private List<String> getSelectedClassIds()
-    {
-        Object selectedName = classComboModel.getSelectedItem();
-        if(selectedName == null)
-        {
-            return new LinqList<>();
-        }
-
-        LinqList<String> ids = new LinqList<>();
-        for(VehicleClass cl : classes)
-        {
-            if(selectedName.equals(cl.getClassName()))
-            {
-                ids.add(cl.getClassId());
-            }
-        }
-        return ids;
     }
 
     private boolean saveConfiguration(File f)
@@ -690,25 +687,27 @@ public class Main extends javax.swing.JFrame
             public void changedUpdate(DocumentEvent e)
             {
                 lastChange++;
-                SwingUtilities.invokeLater(() ->
-                {
-                    if(lastNotifiedChange != lastChange)
-                    {
-                        lastNotifiedChange = lastChange;
-                        changeListener.stateChanged(new ChangeEvent(text));
-                    }
+                SwingUtilities.invokeLater(()
+                        ->
+                        {
+                            if(lastNotifiedChange != lastChange)
+                            {
+                                lastNotifiedChange = lastChange;
+                                changeListener.stateChanged(new ChangeEvent(text));
+                            }
                 });
             }
         };
-        text.addPropertyChangeListener("document", (PropertyChangeEvent e) ->
-                               {
-                                   Document d1 = (Document)e.getOldValue();
-                                   Document d2 = (Document)e.getNewValue();
-                                   if(d1 != null)
-                                       d1.removeDocumentListener(dl);
-                                   if(d2 != null)
-                                       d2.addDocumentListener(dl);
-                                   dl.changedUpdate(null);
+        text.addPropertyChangeListener("document", (PropertyChangeEvent e)
+                                       ->
+                                       {
+                                           Document d1 = (Document)e.getOldValue();
+                                           Document d2 = (Document)e.getNewValue();
+                                           if(d1 != null)
+                                               d1.removeDocumentListener(dl);
+                                           if(d2 != null)
+                                               d2.addDocumentListener(dl);
+                                           dl.changedUpdate(null);
                                });
         Document d = text.getDocument();
         if(d != null)
@@ -735,7 +734,7 @@ public class Main extends javax.swing.JFrame
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<CoolComboBoxModel.Item<VehicleBody>> bodyCombo;
-    private javax.swing.JComboBox<String> classCombo;
+    private javax.swing.JComboBox<CoolComboBoxModel.Item<VehicleClass>> classCombo;
     private javax.swing.JButton clearSearchBtn;
     private javax.swing.JLabel componentImageLabel;
     private javax.swing.JTable componentsTable;

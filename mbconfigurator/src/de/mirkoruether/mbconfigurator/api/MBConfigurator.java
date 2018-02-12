@@ -39,28 +39,32 @@ import de.mirkoruether.mbconfigurator.pojo.Selectables;
 import de.mirkoruether.mbconfigurator.pojo.VehicleBody;
 import de.mirkoruether.mbconfigurator.pojo.VehicleClass;
 import de.mirkoruether.mbconfigurator.pojo.VehicleComponent;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import javax.imageio.ImageIO;
 import javax.net.ssl.HttpsURLConnection;
+import org.apache.commons.io.FileUtils;
 
 public class MBConfigurator
 {
     public static final String BASE_URL = "https://api.mercedes-benz.com/configurator/v1";
     public static final String APIKEY;
     public static final Gson GSON;
+    private static FolderCache cache;
 
     static
     {
         try
         {
-            APIKEY = Files.readAllLines(Paths.get("APIKEY")).get(0);
+            APIKEY = FileUtils.readFileToString(new File("APIKEY"), StandardCharsets.UTF_8).trim();
 
             GSON = new GsonBuilder()
                     .registerTypeAdapter(IncludedComponents.class, new IncludedComponents.Deserializer())
@@ -70,6 +74,8 @@ public class MBConfigurator
                     .setPrettyPrinting()
                     .setLenient()
                     .create();
+
+            cache = new FolderCache(new File(System.getProperty("java.io.tmpdir"), "MBConfigurator"));
 
             String certificateRessourcePath = "/res/cert";
             CertificateManager certificateManager = new CertificateManager("./sslkeystore.jks", "changeit");
@@ -84,6 +90,11 @@ public class MBConfigurator
 
     private MBConfigurator()
     {
+    }
+
+    public static FolderCache getCache()
+    {
+        return cache;
     }
 
     public static Market[] getMarkets(String language)
@@ -259,6 +270,24 @@ public class MBConfigurator
         return request(path, p);
     }
 
+    public static BufferedImage downloadImage(String url)
+    {
+        try
+        {
+            BufferedImage c = cache.getImage(url);
+            if(c != null)
+                return c;
+
+            BufferedImage result = ImageIO.read(new URL(url));
+            cache.putImage(url, result);
+            return result;
+        }
+        catch(IOException ex)
+        {
+            return null;
+        }
+    }
+
     public static String request(String path, Map<String, String> parameters)
     {
         String response = getResponse(path, parameters);
@@ -299,19 +328,25 @@ public class MBConfigurator
     {
         try
         {
+            String c = cache.getResponse(urlString);
+            if(c != null)
+                return c;
+
             HttpsURLConnection con = openAndPrepareConnection(urlString);
             BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            StringBuilder result = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
 
             String line = reader.readLine();
             while(line != null)
             {
-                result.append(line);
-                result.append("\n");
+                sb.append(line);
+                sb.append("\n");
                 line = reader.readLine();
             }
 
-            return result.toString();
+            String result = sb.toString();
+            cache.putResponse(urlString, result);
+            return result;
         }
         catch(IOException ex)
         {
