@@ -2,6 +2,7 @@ package de.mirkoruether.mbconfigurator.gui;
 
 import de.mirkoruether.mbconfigurator.api.ChangeSet;
 import de.mirkoruether.mbconfigurator.api.MBConfigurator;
+import de.mirkoruether.mbconfigurator.logic.AsyncApiCall;
 import de.mirkoruether.mbconfigurator.pojo.Configuration;
 import de.mirkoruether.mbconfigurator.pojo.ConfigurationAlternative;
 import de.mirkoruether.mbconfigurator.pojo.Model;
@@ -10,18 +11,16 @@ import de.mirkoruether.mbconfigurator.pojo.VehicleBody;
 import de.mirkoruether.mbconfigurator.pojo.VehicleClass;
 import de.mirkoruether.mbconfigurator.pojo.VehicleComponent;
 import de.mirkoruether.util.LinqList;
+import de.mirkoruether.util.gui.CoolAllroundWindowListener;
 import de.mirkoruether.util.gui.CoolComboBoxModel;
 import de.mirkoruether.util.gui.CoolTableModel;
+import de.mirkoruether.util.gui.GeneralGuiUtils;
 import de.mirkoruether.util.gui.ImageHolder;
 import java.awt.EventQueue;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.swing.ImageIcon;
@@ -29,95 +28,64 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableModelEvent;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 
-public class Main extends javax.swing.JFrame implements WindowListener
+public class Main extends javax.swing.JFrame implements CoolAllroundWindowListener
 {
     public static final String MARKET = "de_DE";
+    private static final long serialVersionUID = -2992150966224130100L;
 
-    private static final long serialVersionUID = 1L;
+    private final AsyncApiCall api = new AsyncApiCall(MARKET, (r) -> SwingUtilities.invokeLater(r));
 
-    private final CoolComboBoxModel<VehicleClass> classComboModel;
-    private final CoolComboBoxModel<VehicleBody> bodyComboModel;
-    private final CoolComboBoxModel<Model> modelComboModel;
-    private final CoolTableModel<VehicleComponent> componentsTableModel;
+    private final CoolComboBoxModel<VehicleClass> classComboModel
+                                                  = new CoolComboBoxModel<>((c) -> c.getClassName() + " (BR " + c.getClassId() + ")", true);
+
+    private final CoolComboBoxModel<VehicleBody> bodyComboModel
+                                                 = new CoolComboBoxModel<>((b) -> b.getBodyName(), true);
+
+    private final CoolComboBoxModel<Model> modelComboModel
+                                           = new CoolComboBoxModel<>((m) -> m.getName() + " (Baumuster " + m.getBaumuster() + ")", true);
+
+    private final CoolTableModel<VehicleComponent> componentsTableModel
+                                                   = new CoolTableModel<VehicleComponent>()
+                    .addColumn("?", c -> c.isSelected(), Boolean.class, true, 20)
+                    .addColumn("Code", c -> c.getId(), String.class, false, 50)
+                    .addColumn("Kategorie", c -> c.getCategory() == null ? "-" : c.getCategory().getCategoryName(), String.class, false, 100)
+                    .addColumn("Bezeichnung", c -> c.getName(), String.class, false, 200);
+
+    private final SaveManager saveManager = new SaveManager((f) -> saveConfiguration(f),
+                                                            () -> saveConfigurationAs(),
+                                                            () -> SaveManager.DialogResult.Discard);
 
     private Configuration currentConfig = null;
-    private LinqList<VehicleComponent> selectables = new LinqList<>();
-    private final SaveManager saveManager;
+    private final LinqList<VehicleComponent> selectables = new LinqList<>();
 
     public Main()
     {
         initComponents();
 
-        addWindowListener(this);
+        applyAllroundWindowListenerTo(this);
 
-        classComboModel = new CoolComboBoxModel<>((c) -> c.getClassName() + " (BR " + c.getClassId() + ")", true);
+        GeneralGuiUtils.addChangeListener(searchTxt, evt -> searchTxtTextChanged(evt));
+
         classCombo.setModel(classComboModel);
-
-        bodyComboModel = new CoolComboBoxModel<>((b) -> b.getBodyName(), true);
         bodyCombo.setModel(bodyComboModel);
-
-        modelComboModel = new CoolComboBoxModel<>((m) -> m.getName() + " (Baumuster " + m.getBaumuster() + ")", true);
         modelCombo.setModel(modelComboModel);
 
-        addChangeListener(searchTxt, evt -> searchTxtTextChanged(evt));
-
         componentsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-        componentsTableModel = new CoolTableModel<VehicleComponent>()
-                .addColumn("?", c -> c.isSelected(), Boolean.class, true, 20)
-                .addColumn("Code", c -> c.getId(), String.class, false, 50)
-                .addColumn("Kategorie", c -> c.getCategory() == null ? "-" : c.getCategory().getCategoryName(), String.class, false, 100)
-                .addColumn("Bezeichnung", c -> c.getName(), String.class, false, 200);
         componentsTableModel.applyTo(componentsTable);
         componentsTableModel.addTableModelListener(evt -> tableChanged(evt));
         componentsTable.getSelectionModel().addListSelectionListener((evt) -> selectionChanged(evt));
 
         classCombo.setSelectedItem(null);
 
-        saveManager = new SaveManager((f) -> saveConfiguration(f),
-                                      ()
-                                      ->
-                                      {
-                                          JFileChooser fc = new JFileChooser();
-                                          if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION)
-                                          {
-                                              File f = fc.getSelectedFile();
-                                              if(saveConfiguration(f))
-                                                  return f;
-                                          }
-                                          return null;
-                              },
-                                      () -> SaveManager.DialogResult.Discard);
         pack();
 
-        new Thread(()
-                ->
-                {
-                    VehicleClass[] classes = MBConfigurator.getVehicleClasses(MARKET, null, null);
-                    EventQueue.invokeLater(() -> classComboModel.setAll(classes, true));
-        }).start();
-    }
-
-    @Override
-    public void windowActivated(WindowEvent e)
-    {
-    }
-
-    @Override
-    public void windowClosed(WindowEvent e)
-    {
+        api.getClasses(c -> classComboModel.setAll(c, true));
     }
 
     @Override
@@ -125,26 +93,6 @@ public class Main extends javax.swing.JFrame implements WindowListener
     {
         MBConfigurator.getCache().saveMaps();
         System.exit(0);
-    }
-
-    @Override
-    public void windowDeactivated(WindowEvent e)
-    {
-    }
-
-    @Override
-    public void windowDeiconified(WindowEvent e)
-    {
-    }
-
-    @Override
-    public void windowIconified(WindowEvent e)
-    {
-    }
-
-    @Override
-    public void windowOpened(WindowEvent e)
-    {
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -238,6 +186,7 @@ public class Main extends javax.swing.JFrame implements WindowListener
             }
         });
 
+        hideDefaultCheckBox.setSelected(true);
         hideDefaultCheckBox.setText("Standardaustattung ausblenden");
         hideDefaultCheckBox.addActionListener(new java.awt.event.ActionListener()
         {
@@ -397,37 +346,15 @@ public class Main extends javax.swing.JFrame implements WindowListener
     private void classComboActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_classComboActionPerformed
     {//GEN-HEADEREND:event_classComboActionPerformed
         bodyComboModel.removeAllElements();
-        VehicleClass selectedClass = classComboModel.getSelected();
-        String selectedClassId = selectedClass == null ? null : selectedClass.getClassId();
-        if(selectedClassId != null)
-        {
-            new Thread(()
-                    ->
-                    {
-                        VehicleBody[] bodies = MBConfigurator.getVehicleBodies(MARKET, null, selectedClassId);
-                        EventQueue.invokeLater(() -> bodyComboModel.setAll(bodies, true));
-            }).start();
-        }
+        api.getBodies(classComboModel.getSelected(),
+                      x -> bodyComboModel.setAll(x, true));
     }//GEN-LAST:event_classComboActionPerformed
 
     private void bodyComboActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_bodyComboActionPerformed
     {//GEN-HEADEREND:event_bodyComboActionPerformed
         modelComboModel.removeAllElements();
-        VehicleClass selectedClass = classComboModel.getSelected();
-        VehicleBody selectedBody = bodyComboModel.getSelected();
-        String selectedClassId = selectedClass == null ? null : selectedClass.getClassId();
-        String selectedBodyId = selectedBody == null ? null : selectedBody.getBodyId();
-
-        if(selectedClassId != null && !selectedClassId.trim().isEmpty()
-           && selectedBodyId != null && !selectedBodyId.trim().isEmpty())
-        {
-            new Thread(()
-                    ->
-                    {
-                        Model[] models = MBConfigurator.getModels(MARKET, null, selectedClassId, selectedBodyId);
-                        EventQueue.invokeLater(() -> modelComboModel.setAll(models, true));
-            }).start();
-        }
+        api.getModels(classComboModel.getSelected(), bodyComboModel.getSelected(),
+                      m -> modelComboModel.setAll(m, true));
     }//GEN-LAST:event_bodyComboActionPerformed
 
     private void newConfigurationBtnActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_newConfigurationBtnActionPerformed
@@ -545,9 +472,9 @@ public class Main extends javax.swing.JFrame implements WindowListener
         downloadAndSetImage(componentImageLabel,
                             ()
                             ->
-                            {
-                                Map<String, String> links = MBConfigurator.getComponentImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId(), comp);
-                                return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
+                    {
+                        Map<String, String> links = MBConfigurator.getComponentImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId(), comp);
+                        return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
                     },
                             () -> componentsTable.getSelectedRow() > 0
                                   && id.equals(componentsTableModel.getValueAt(componentsTable.getSelectedRow(), 1).toString()), 1);
@@ -566,9 +493,9 @@ public class Main extends javax.swing.JFrame implements WindowListener
         downloadAndSetImage(imageLabel,
                             ()
                             ->
-                            {
-                                Map<String, String> links = MBConfigurator.getVehicleImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId());
-                                return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
+                    {
+                        Map<String, String> links = MBConfigurator.getVehicleImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId());
+                        return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
                     },
                             () -> currentConfig != null && id.equals(currentConfig.getConfigurationId()), 5);
     }
@@ -579,37 +506,37 @@ public class Main extends javax.swing.JFrame implements WindowListener
         label.setText("Lade Bild...");
         new Thread(()
                 ->
+        {
+            BufferedImage image = null;
+            boolean error = true;
+            int count = 0;
+            while(error && count++ < retrys)
+            {
+                try
                 {
-                    BufferedImage image = null;
-                    boolean error = true;
-                    int count = 0;
-                    while(error && count++ < retrys)
-                    {
-                        try
-                        {
-                            image = supplier.get();
-                            error = false;
-                        }
-                        catch(Exception ex)
-                        {
-                            sleep(500);
-                        }
-                    }
+                    image = supplier.get();
+                    error = false;
+                }
+                catch(Exception ex)
+                {
+                    GeneralGuiUtils.sleep(500);
+                }
+            }
 
-                    final BufferedImage finalImage = image;
-                    final boolean finalError = error;
-                    EventQueue.invokeLater(()
-                            ->
-                            {
-                                if(checkAfterDownload.get())
-                                {
-                                    label.setIcon(finalImage == null ? null : new ImageIcon(finalImage));
-                                    if(finalError)
-                                    {
-                                        label.setText("Fehler beim Laden des Bilds");
-                                    }
-                                }
-                    });
+            final BufferedImage finalImage = image;
+            final boolean finalError = error;
+            EventQueue.invokeLater(()
+                    ->
+            {
+                if(checkAfterDownload.get())
+                {
+                    label.setIcon(finalImage == null ? null : new ImageIcon(finalImage));
+                    if(finalError)
+                    {
+                        label.setText("Fehler beim Laden des Bilds");
+                    }
+                }
+            });
         }).start();
     }
 
@@ -620,110 +547,45 @@ public class Main extends javax.swing.JFrame implements WindowListener
 
         Predicate<VehicleComponent> pred = (c)
                 ->
+        {
+            if(c == null)
+                return false;
+            if(hideDefaultCheckBox.isSelected() && c.isStandard())
+                return false;
+
+            String name = c.getName() == null ? "" : c.getName().toUpperCase();
+            String code = c.getId() == null ? "" : c.getId().toUpperCase();
+            for(String word : searchWords)
+            {
+                if(!(name.contains(word) || code.contains(word)))
                 {
-                    if(c == null)
-                        return false;
-                    if(hideDefaultCheckBox.isSelected() && c.isStandard())
-                        return false;
+                    return false;
+                }
+            }
 
-                    String name = c.getName() == null ? "" : c.getName().toUpperCase();
-                    String code = c.getId() == null ? "" : c.getId().toUpperCase();
-                    for(String word : searchWords)
-                    {
-                        if(!(name.contains(word) || code.contains(word)))
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
+            return true;
         };
 
         componentsTableModel.clear();
         componentsTableModel.addAll(selectables.where(pred));
     }
 
+    private File saveConfigurationAs()
+    {
+        JFileChooser fc = new JFileChooser();
+        if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION)
+        {
+            File f = fc.getSelectedFile();
+            if(saveConfiguration(f))
+                return f;
+        }
+        return null;
+    }
+
     private boolean saveConfiguration(File f)
     {
         //TODO implement
         return true;
-    }
-
-    /**
-     * Installs a listener to receive notification when the text of any
-     * {@code JTextComponent} is changed. Internally, it installs a
-     * {@link DocumentListener} on the text component's {@link Document},
-     * and a {@link PropertyChangeListener} on the text component to detect
-     * if the {@code Document} itself is replaced.
-     *
-     * @param text           any text component, such as a {@link JTextField}
-     *                       or {@link JTextArea}
-     * @param changeListener a listener to receieve {@link ChangeEvent}s
-     *                       when the text is changed; the source object for the events
-     *                       will be the text component
-     * @throws NullPointerException if either parameter is null
-     */
-    public static void addChangeListener(JTextComponent text, ChangeListener changeListener)
-    {
-        Objects.requireNonNull(text);
-        Objects.requireNonNull(changeListener);
-        DocumentListener dl = new DocumentListener()
-        {
-            private int lastChange = 0, lastNotifiedChange = 0;
-
-            @Override
-            public void insertUpdate(DocumentEvent e)
-            {
-                changedUpdate(e);
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e)
-            {
-                changedUpdate(e);
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e)
-            {
-                lastChange++;
-                SwingUtilities.invokeLater(()
-                        ->
-                        {
-                            if(lastNotifiedChange != lastChange)
-                            {
-                                lastNotifiedChange = lastChange;
-                                changeListener.stateChanged(new ChangeEvent(text));
-                            }
-                });
-            }
-        };
-        text.addPropertyChangeListener("document", (PropertyChangeEvent e)
-                                       ->
-                                       {
-                                           Document d1 = (Document)e.getOldValue();
-                                           Document d2 = (Document)e.getNewValue();
-                                           if(d1 != null)
-                                               d1.removeDocumentListener(dl);
-                                           if(d2 != null)
-                                               d2.addDocumentListener(dl);
-                                           dl.changedUpdate(null);
-                               });
-        Document d = text.getDocument();
-        if(d != null)
-            d.addDocumentListener(dl);
-    }
-
-    private static void sleep(long millis)
-    {
-        try
-        {
-            Thread.sleep(millis);
-        }
-        catch(InterruptedException ex)
-        {
-            throw new RuntimeException(ex);
-        }
     }
 
     public static void main(String args[]) throws Exception
