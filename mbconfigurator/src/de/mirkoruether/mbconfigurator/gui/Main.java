@@ -2,6 +2,7 @@ package de.mirkoruether.mbconfigurator.gui;
 
 import de.mirkoruether.mbconfigurator.api.ChangeSet;
 import de.mirkoruether.mbconfigurator.api.MBConfigurator;
+import de.mirkoruether.mbconfigurator.logic.AppConfig;
 import de.mirkoruether.mbconfigurator.logic.AsyncApiCall;
 import de.mirkoruether.mbconfigurator.pojo.Configuration;
 import de.mirkoruether.mbconfigurator.pojo.ConfigurationAlternative;
@@ -52,10 +53,10 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
 
     private final CoolTableModel<VehicleComponent> componentsTableModel
                                                    = new CoolTableModel<VehicleComponent>()
-                    .addColumn("?", c -> c.isSelected(), Boolean.class, true, 20)
-                    .addColumn("Code", c -> c.getId(), String.class, false, 50)
-                    .addColumn("Kategorie", c -> c.getCategory() == null ? "-" : c.getCategory().getCategoryName(), String.class, false, 100)
-                    .addColumn("Bezeichnung", c -> c.getName(), String.class, false, 200);
+            .addColumn("?", c -> c.isSelected(), Boolean.class, true, 20)
+            .addColumn("Code", c -> c.getId(), String.class, false, 50)
+            .addColumn("Kategorie", c -> c.getCategory() == null ? "-" : c.getCategory().getCategoryName(), String.class, false, 100)
+            .addColumn("Bezeichnung", c -> c.getName(), String.class, false, 200);
 
     private final SaveManager saveManager = new SaveManager((f) -> saveConfiguration(f),
                                                             () -> saveConfigurationAs(),
@@ -63,6 +64,8 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
 
     private Configuration currentConfig = null;
     private final LinqList<VehicleComponent> selectables = new LinqList<>();
+
+    private final AppConfig cfg = AppConfig.loadOrCreate(new File("mbc.cfg"));
 
     public Main()
     {
@@ -472,9 +475,9 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
         downloadAndSetImage(componentImageLabel,
                             ()
                             ->
-                    {
-                        Map<String, String> links = MBConfigurator.getComponentImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId(), comp);
-                        return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
+                            {
+                                Map<String, String> links = MBConfigurator.getComponentImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId(), comp);
+                                return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
                     },
                             () -> componentsTable.getSelectedRow() > 0
                                   && id.equals(componentsTableModel.getValueAt(componentsTable.getSelectedRow(), 1).toString()), 1);
@@ -484,7 +487,8 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
     {
         selectables.clear();
         Selectables select = MBConfigurator.getSelectibles(MARKET, config.getModelId(), config.getConfigurationId());
-        selectables.addAll(select.getVehicleComponents());
+        selectables.addAllWhere(select.getVehicleComponents(),
+                                c -> !cfg.getIgnoredCodeTypes().contains(c.getCodeType()));
         selectables.sort(null);
         updateSeletables();
         currentConfig = config;
@@ -493,9 +497,9 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
         downloadAndSetImage(imageLabel,
                             ()
                             ->
-                    {
-                        Map<String, String> links = MBConfigurator.getVehicleImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId());
-                        return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
+                            {
+                                Map<String, String> links = MBConfigurator.getVehicleImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId());
+                                return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
                     },
                             () -> currentConfig != null && id.equals(currentConfig.getConfigurationId()), 5);
     }
@@ -506,37 +510,37 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
         label.setText("Lade Bild...");
         new Thread(()
                 ->
-        {
-            BufferedImage image = null;
-            boolean error = true;
-            int count = 0;
-            while(error && count++ < retrys)
-            {
-                try
                 {
-                    image = supplier.get();
-                    error = false;
-                }
-                catch(Exception ex)
-                {
-                    GeneralGuiUtils.sleep(500);
-                }
-            }
-
-            final BufferedImage finalImage = image;
-            final boolean finalError = error;
-            EventQueue.invokeLater(()
-                    ->
-            {
-                if(checkAfterDownload.get())
-                {
-                    label.setIcon(finalImage == null ? null : new ImageIcon(finalImage));
-                    if(finalError)
+                    BufferedImage image = null;
+                    boolean error = true;
+                    int count = 0;
+                    while(error && count++ < retrys)
                     {
-                        label.setText("Fehler beim Laden des Bilds");
+                        try
+                        {
+                            image = supplier.get();
+                            error = false;
+                        }
+                        catch(Exception ex)
+                        {
+                            GeneralGuiUtils.sleep(500);
+                        }
                     }
-                }
-            });
+
+                    final BufferedImage finalImage = image;
+                    final boolean finalError = error;
+                    EventQueue.invokeLater(()
+                            ->
+                            {
+                                if(checkAfterDownload.get())
+                                {
+                                    label.setIcon(finalImage == null ? null : new ImageIcon(finalImage));
+                                    if(finalError)
+                                    {
+                                        label.setText("Fehler beim Laden des Bilds");
+                                    }
+                                }
+                    });
         }).start();
     }
 
@@ -547,23 +551,23 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
 
         Predicate<VehicleComponent> pred = (c)
                 ->
-        {
-            if(c == null)
-                return false;
-            if(hideDefaultCheckBox.isSelected() && c.isStandard())
-                return false;
-
-            String name = c.getName() == null ? "" : c.getName().toUpperCase();
-            String code = c.getId() == null ? "" : c.getId().toUpperCase();
-            for(String word : searchWords)
-            {
-                if(!(name.contains(word) || code.contains(word)))
                 {
-                    return false;
-                }
-            }
+                    if(c == null)
+                        return false;
+                    if(hideDefaultCheckBox.isSelected() && c.isStandard())
+                        return false;
 
-            return true;
+                    String name = c.getName() == null ? "" : c.getName().toUpperCase();
+                    String code = c.getId() == null ? "" : c.getId().toUpperCase();
+                    for(String word : searchWords)
+                    {
+                        if(!(name.contains(word) || code.contains(word)))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
         };
 
         componentsTableModel.clear();

@@ -56,6 +56,16 @@ public class LinqList<T> extends ArrayList<T>
         addAll(index, Arrays.asList(arr));
     }
 
+    public void addAllWhere(Collection<T> c, Predicate<T> func)
+    {
+        addAll(new LinqList<>(c).where(func));
+    }
+
+    public void addAllWhere(T[] arr, Predicate<T> func)
+    {
+        addAll(new LinqList<>(arr).where(func));
+    }
+
     public LinqList<T> copy()
     {
         return new LinqList<>(this);
