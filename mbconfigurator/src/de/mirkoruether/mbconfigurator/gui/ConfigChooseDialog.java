@@ -24,18 +24,51 @@ SOFTWARE.
 package de.mirkoruether.mbconfigurator.gui;
 
 import de.mirkoruether.mbconfigurator.pojo.ConfigurationAlternative;
+import de.mirkoruether.util.gui.CoolAllroundWindowListener;
+import java.awt.HeadlessException;
+import java.awt.event.WindowEvent;
+import java.util.function.Consumer;
 import javax.swing.JFrame;
+import javax.swing.JTabbedPane;
 
-/**
- *
- * @author Mirko Ruether
- */
-public class ConfigChooseDialog extends JFrame
+public class ConfigChooseDialog extends JFrame implements CoolAllroundWindowListener
 {
     private static final long serialVersionUID = 3354431203168620662L;
 
-    public ConfigChooseDialog(ConfigurationAlternative[] alternatives)
-    {
+    private final ConfigurationAlternative[] alternatives;
+    private final Consumer<ConfigurationAlternative> callback;
+    private final JTabbedPane tabs;
 
+    public ConfigChooseDialog(ConfigurationAlternative[] alternatives, Consumer<ConfigurationAlternative> callback) throws HeadlessException
+    {
+        applyAllroundWindowListenerTo(this);
+
+        this.alternatives = alternatives;
+        this.callback = callback;
+
+        this.tabs = new JTabbedPane();
+
+        for(int i = 0; i < alternatives.length; i++)
+        {
+            ConfigurationAlternative alt = alternatives[i];
+            final int number = i;
+            tabs.add("Alternative" + (i + 1), new ChoicePanel(alt, () -> finish(number)));
+        }
+
+        this.add(tabs);
+
+        pack();
+    }
+
+    private void finish(int index)
+    {
+        dispose();
+        callback.accept(index < 0 ? null : alternatives[index]);
+    }
+
+    @Override
+    public void windowClosing(WindowEvent e)
+    {
+        finish(-1);
     }
 }

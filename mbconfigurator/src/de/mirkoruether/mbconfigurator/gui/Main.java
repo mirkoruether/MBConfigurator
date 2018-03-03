@@ -22,6 +22,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.swing.ImageIcon;
@@ -53,10 +54,10 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
 
     private final CoolTableModel<VehicleComponent> componentsTableModel
                                                    = new CoolTableModel<VehicleComponent>()
-            .addColumn("?", c -> c.isSelected(), Boolean.class, true, 20)
-            .addColumn("Code", c -> c.getId(), String.class, false, 50)
-            .addColumn("Kategorie", c -> c.getCategory() == null ? "-" : c.getCategory().getCategoryName(), String.class, false, 100)
-            .addColumn("Bezeichnung", c -> c.getName(), String.class, false, 200);
+                    .addColumn("?", c -> c.isSelected(), Boolean.class, true, 20)
+                    .addColumn("Code", c -> c.getId(), String.class, false, 50)
+                    .addColumn("Kategorie", c -> c.getCategory() == null ? "-" : c.getCategory().getCategoryName(), String.class, false, 100)
+                    .addColumn("Bezeichnung", c -> c.getName(), String.class, false, 200);
 
     private final SaveManager saveManager = new SaveManager((f) -> saveConfiguration(f),
                                                             () -> saveConfigurationAs(),
@@ -102,6 +103,7 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
     private void initComponents()
     {
 
+        dialogBehaviourGroup = new javax.swing.ButtonGroup();
         classCombo = new javax.swing.JComboBox<>();
         bodyCombo = new javax.swing.JComboBox<>();
         modelCombo = new javax.swing.JComboBox<>();
@@ -123,6 +125,10 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
         imageLabel = new ImageHolder();
         jSeparator3 = new javax.swing.JSeparator();
         refreshBtn = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        dialogAlwaysRadio = new javax.swing.JRadioButton();
+        dialogIfChangesRadio = new javax.swing.JRadioButton();
+        dialogNeverRadio = new javax.swing.JRadioButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -267,6 +273,18 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
             }
         });
 
+        jLabel1.setText("Änderungsinfo zeigen:");
+
+        dialogBehaviourGroup.add(dialogAlwaysRadio);
+        dialogAlwaysRadio.setSelected(true);
+        dialogAlwaysRadio.setText("Immer");
+
+        dialogBehaviourGroup.add(dialogIfChangesRadio);
+        dialogIfChangesRadio.setText("Bei Auswahl");
+
+        dialogBehaviourGroup.add(dialogNeverRadio);
+        dialogNeverRadio.setText("Nie");
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -277,7 +295,15 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
                     .addComponent(jSeparator3)
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addComponent(refreshBtn)
-                        .addGap(0, 589, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(dialogAlwaysRadio)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(dialogIfChangesRadio)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(dialogNeverRadio)
+                        .addGap(0, 282, Short.MAX_VALUE)))
                 .addContainerGap())
             .addComponent(imageLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -289,7 +315,12 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(refreshBtn)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(refreshBtn)
+                    .addComponent(jLabel1)
+                    .addComponent(dialogAlwaysRadio)
+                    .addComponent(dialogIfChangesRadio)
+                    .addComponent(dialogNeverRadio))
                 .addGap(5, 5, 5))
         );
 
@@ -405,29 +436,10 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
 
     private void refreshBtnActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_refreshBtnActionPerformed
     {//GEN-HEADEREND:event_refreshBtnActionPerformed
-        try
-        {
-            ChangeSet cs = ChangeSet.build(new LinqList<>(currentConfig.getVehicleComponents()).select(c -> c.getId()),
-                                           selectables.where(c -> c.isSelected()).select(c -> c.getId()));
-            String newConfigurationId = currentConfig.getConfigurationId();
+        ChangeSet cs = ChangeSet.build(new LinqList<>(currentConfig.getVehicleComponents()).select(c -> c.getId()),
+                                       selectables.where(c -> c.isSelected()).select(c -> c.getId()));
 
-            if(!cs.isEmpty())
-            {
-                ConfigurationAlternative[] alts = MBConfigurator.getAlternatives(MARKET, currentConfig.getModelId(),
-                                                                                 currentConfig.getConfigurationId(), cs.toString());
-
-                ConfigurationAlternative selectedAlt = alts[0];
-                newConfigurationId = selectedAlt.getConfigurationId();
-            }
-
-            Configuration conf = MBConfigurator.getConfiguration(MARKET, currentConfig.getModelId(), newConfigurationId);
-            setCurrentConfig(conf);
-        }
-        catch(Exception ex)
-        {
-            JOptionPane.showMessageDialog(this, "Unerwarteter Fehler! " + ex.getMessage());
-            ex.printStackTrace();
-        }
+        api.getAlternatives(currentConfig, cs, alts -> chooseAlternative(alts));
     }//GEN-LAST:event_refreshBtnActionPerformed
 
     private void clearSearchBtnActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_clearSearchBtnActionPerformed
@@ -470,17 +482,38 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
 
         String selectedCode = componentsTableModel.getValueAt(componentsTable.getSelectedRow(), 1).toString();
         VehicleComponent comp = selectables.firstWhere((c) -> selectedCode.equals(c.getId()));
-        final String id = comp.getId();
 
-        downloadAndSetImage(componentImageLabel,
-                            ()
-                            ->
-                            {
-                                Map<String, String> links = MBConfigurator.getComponentImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId(), comp);
-                                return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
-                    },
-                            () -> componentsTable.getSelectedRow() > 0
-                                  && id.equals(componentsTableModel.getValueAt(componentsTable.getSelectedRow(), 1).toString()), 1);
+        if(comp != null)
+        {
+            final String id = comp.getId();
+
+            downloadAndSetImage(componentImageLabel,
+                                ()
+                                ->
+                        {
+                            Map<String, String> links = MBConfigurator.getComponentImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId(), comp);
+                            return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
+                        },
+                                () -> componentsTable.getSelectedRow() > 0
+                                      && id.equals(componentsTableModel.getValueAt(componentsTable.getSelectedRow(), 1).toString()), 1);
+        }
+    }
+
+    private void chooseAlternative(ConfigurationAlternative[] alts)
+    {
+        final Consumer<ConfigurationAlternative> callback = a
+                -> api.getConfig(a, c -> setCurrentConfig(c));
+
+        if(dialogNeverRadio.isSelected() || (dialogIfChangesRadio.isSelected() && alts.length == 1)
+           || (alts[0].getAddedComponents().isEmpty() && alts[0].getUpdatedComponents().isEmpty() && alts[0].getRemovedComponents().isEmpty()))
+        {
+            callback.accept(alts[0]);
+        }
+        else
+        {
+            ConfigChooseDialog dialog = new ConfigChooseDialog(alts, callback);
+            dialog.setVisible(true);
+        }
     }
 
     public void setCurrentConfig(Configuration config)
@@ -497,9 +530,9 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
         downloadAndSetImage(imageLabel,
                             ()
                             ->
-                            {
-                                Map<String, String> links = MBConfigurator.getVehicleImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId());
-                                return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
+                    {
+                        Map<String, String> links = MBConfigurator.getVehicleImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId());
+                        return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
                     },
                             () -> currentConfig != null && id.equals(currentConfig.getConfigurationId()), 5);
     }
@@ -510,37 +543,37 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
         label.setText("Lade Bild...");
         new Thread(()
                 ->
+        {
+            BufferedImage image = null;
+            boolean error = true;
+            int count = 0;
+            while(error && count++ < retrys)
+            {
+                try
                 {
-                    BufferedImage image = null;
-                    boolean error = true;
-                    int count = 0;
-                    while(error && count++ < retrys)
-                    {
-                        try
-                        {
-                            image = supplier.get();
-                            error = false;
-                        }
-                        catch(Exception ex)
-                        {
-                            GeneralGuiUtils.sleep(500);
-                        }
-                    }
+                    image = supplier.get();
+                    error = false;
+                }
+                catch(Exception ex)
+                {
+                    GeneralGuiUtils.sleep(500);
+                }
+            }
 
-                    final BufferedImage finalImage = image;
-                    final boolean finalError = error;
-                    EventQueue.invokeLater(()
-                            ->
-                            {
-                                if(checkAfterDownload.get())
-                                {
-                                    label.setIcon(finalImage == null ? null : new ImageIcon(finalImage));
-                                    if(finalError)
-                                    {
-                                        label.setText("Fehler beim Laden des Bilds");
-                                    }
-                                }
-                    });
+            final BufferedImage finalImage = image;
+            final boolean finalError = error;
+            EventQueue.invokeLater(()
+                    ->
+            {
+                if(checkAfterDownload.get())
+                {
+                    label.setIcon(finalImage == null ? null : new ImageIcon(finalImage));
+                    if(finalError)
+                    {
+                        label.setText("Fehler beim Laden des Bilds");
+                    }
+                }
+            });
         }).start();
     }
 
@@ -551,23 +584,23 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
 
         Predicate<VehicleComponent> pred = (c)
                 ->
+        {
+            if(c == null)
+                return false;
+            if(hideDefaultCheckBox.isSelected() && c.isStandard())
+                return false;
+
+            String name = c.getName() == null ? "" : c.getName().toUpperCase();
+            String code = c.getId() == null ? "" : c.getId().toUpperCase();
+            for(String word : searchWords)
+            {
+                if(!(name.contains(word) || code.contains(word)))
                 {
-                    if(c == null)
-                        return false;
-                    if(hideDefaultCheckBox.isSelected() && c.isStandard())
-                        return false;
+                    return false;
+                }
+            }
 
-                    String name = c.getName() == null ? "" : c.getName().toUpperCase();
-                    String code = c.getId() == null ? "" : c.getId().toUpperCase();
-                    for(String word : searchWords)
-                    {
-                        if(!(name.contains(word) || code.contains(word)))
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
+            return true;
         };
 
         componentsTableModel.clear();
@@ -604,8 +637,13 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
     private javax.swing.JButton clearSearchBtn;
     private javax.swing.JLabel componentImageLabel;
     private javax.swing.JTable componentsTable;
+    private javax.swing.JRadioButton dialogAlwaysRadio;
+    private javax.swing.ButtonGroup dialogBehaviourGroup;
+    private javax.swing.JRadioButton dialogIfChangesRadio;
+    private javax.swing.JRadioButton dialogNeverRadio;
     private javax.swing.JCheckBox hideDefaultCheckBox;
     private javax.swing.JLabel imageLabel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;

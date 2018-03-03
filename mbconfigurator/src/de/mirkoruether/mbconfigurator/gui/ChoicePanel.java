@@ -26,48 +26,29 @@ package de.mirkoruether.mbconfigurator.gui;
 import de.mirkoruether.mbconfigurator.pojo.ConfigurationAlternative;
 import de.mirkoruether.mbconfigurator.pojo.VehicleComponent;
 import de.mirkoruether.util.gui.CoolTableModel;
+import java.util.List;
 
 public class ChoicePanel extends javax.swing.JPanel
 {
     private static final long serialVersionUID = -6570044065922466815L;
 
-    private final CoolTableModel<Entry> tableModel;
+    private final CoolTableModel<Entry> tableModel = new CoolTableModel<Entry>()
+            .addColumn("Aktion", x -> x.getType(), String.class, false, 70)
+            .addColumn("Code", x -> x.getCode(), String.class, false, 50)
+            .addColumn("Name", x -> x.getName(), String.class, false, 300);
 
-    public ChoicePanel(int number, ConfigurationAlternative alt)
+    private final Runnable callback;
+
+    public ChoicePanel(ConfigurationAlternative alt, Runnable callback)
     {
+        this.callback = callback;
         initComponents();
 
-        tableModel = new CoolTableModel<Entry>()
-                .addColumn("Aktion", x -> x.getType(), String.class, false, 20);
+        tableModel.applyTo(changeTable);
 
-        tableModel.applyTo(jTable1);
-    }
-
-    private static class Entry
-    {
-        private final String type;
-        private final VehicleComponent comp;
-
-        public Entry(String type, VehicleComponent comp)
-        {
-            this.type = type;
-            this.comp = comp;
-        }
-
-        public String getType()
-        {
-            return type;
-        }
-
-        public String getCode()
-        {
-            return comp == null ? null : comp.getCode();
-        }
-
-        public String getName()
-        {
-            return comp == null ? null : comp.getName();
-        }
+        addToTable(alt.getAddedComponents(), "Hinzugefügt");
+        addToTable(alt.getRemovedComponents(), "Entfernt");
+        addToTable(alt.getUpdatedComponents(), "Verändert");
     }
 
     @SuppressWarnings("unchecked")
@@ -75,25 +56,20 @@ public class ChoicePanel extends javax.swing.JPanel
     private void initComponents()
     {
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        confirmButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        changeTable = new javax.swing.JTable();
 
-        jLabel1.setText("Alterntive Nr.");
+        confirmButton.setText("Diese Alternative akzeptieren");
+        confirmButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                confirmButtonActionPerformed(evt);
+            }
+        });
 
-        jLabel2.setText("0");
-
-        jLabel3.setText("Preis:");
-
-        jLabel4.setText("2500€");
-
-        jButton1.setText("Auswählen");
-
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        changeTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][]
             {
                 {null, null, null, null},
@@ -106,7 +82,7 @@ public class ChoicePanel extends javax.swing.JPanel
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(changeTable);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -115,42 +91,67 @@ public class ChoicePanel extends javax.swing.JPanel
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)))
+                    .addComponent(confirmButton, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel4)
-                    .addComponent(jButton1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(confirmButton)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void confirmButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_confirmButtonActionPerformed
+    {//GEN-HEADEREND:event_confirmButtonActionPerformed
+        callback.run();
+    }//GEN-LAST:event_confirmButtonActionPerformed
+
+    private void addToTable(List<VehicleComponent> list, String type)
+    {
+        if(list != null)
+        {
+            for(VehicleComponent c : list)
+            {
+                tableModel.add(new Entry(type, c));
+            }
+        }
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
+    private javax.swing.JTable changeTable;
+    private javax.swing.JButton confirmButton;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables
+
+    private static class Entry
+    {
+        private final String type;
+        private final VehicleComponent comp;
+
+        Entry(String type, VehicleComponent comp)
+        {
+            this.type = type;
+            this.comp = comp;
+        }
+
+        public String getType()
+        {
+            return type;
+        }
+
+        public String getCode()
+        {
+            return comp == null ? null : comp.getId();
+        }
+
+        public String getName()
+        {
+            return comp == null ? null : comp.getName();
+        }
+    }
 }

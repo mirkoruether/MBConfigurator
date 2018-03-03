@@ -23,7 +23,10 @@ SOFTWARE.
  */
 package de.mirkoruether.mbconfigurator.logic;
 
+import de.mirkoruether.mbconfigurator.api.ChangeSet;
 import de.mirkoruether.mbconfigurator.api.MBConfigurator;
+import de.mirkoruether.mbconfigurator.pojo.Configuration;
+import de.mirkoruether.mbconfigurator.pojo.ConfigurationAlternative;
 import de.mirkoruether.mbconfigurator.pojo.Model;
 import de.mirkoruether.mbconfigurator.pojo.VehicleBody;
 import de.mirkoruether.mbconfigurator.pojo.VehicleClass;
@@ -47,7 +50,7 @@ public class AsyncApiCall
                 ->
         {
             VehicleClass[] classes = MBConfigurator.getVehicleClasses(MARKET, null, null);
-            callback(callback, classes);
+            doCallback(callback, classes);
         }).start();
     }
 
@@ -60,7 +63,7 @@ public class AsyncApiCall
                     ->
             {
                 VehicleBody[] bodies = MBConfigurator.getVehicleBodies(market, null, clId);
-                callback(callback, bodies);
+                doCallback(callback, bodies);
             }).start();
         }
     }
@@ -77,12 +80,52 @@ public class AsyncApiCall
                     ->
             {
                 Model[] models = MBConfigurator.getModels(MARKET, null, clId, bdyId);
-                callback(callback, models);
+                doCallback(callback, models);
             }).start();
         }
     }
 
-    private <T> void callback(Consumer<T> callback, T obj)
+    public void getAlternatives(Configuration currentCfg, ChangeSet cs, Consumer<ConfigurationAlternative[]> callback)
+    {
+        if(currentCfg != null && !cs.isEmpty())
+        {
+            new Thread(()
+                    ->
+            {
+                ConfigurationAlternative[] alts = MBConfigurator
+                        .getAlternatives(MARKET, currentCfg.getModelId(), currentCfg.getConfigurationId(), cs.toString());
+                doCallback(callback, alts);
+            }).start();
+        }
+    }
+
+    public void getConfig(ConfigurationAlternative alt, Consumer<Configuration> callback)
+    {
+        if(alt != null)
+        {
+            getConfig(alt.getModelId(), alt.getConfigurationId(), callback);
+        }
+    }
+
+    public void getConfig(Configuration cfg, Consumer<Configuration> callback)
+    {
+        if(cfg != null)
+        {
+            getConfig(cfg.getModelId(), cfg.getConfigurationId(), callback);
+        }
+    }
+
+    public void getConfig(String modelId, String cfgid, Consumer<Configuration> callback)
+    {
+        new Thread(()
+                ->
+        {
+            Configuration conf = MBConfigurator.getConfiguration(MARKET, modelId, cfgid);
+            doCallback(callback, conf);
+        }).start();
+    }
+
+    private <T> void doCallback(Consumer<T> callback, T obj)
     {
         callbackThread.accept(() -> callback.accept(obj));
     }

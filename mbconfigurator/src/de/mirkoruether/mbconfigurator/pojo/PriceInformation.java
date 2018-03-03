@@ -185,4 +185,10 @@ public class PriceInformation implements Serializable
                 .append(currency, rhs.currency)
                 .isEquals();
     }
+
+    @Override
+    public String toString()
+    {
+        return price + currency;
+    }
 }

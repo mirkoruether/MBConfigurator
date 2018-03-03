@@ -49,12 +49,16 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.net.ssl.HttpsURLConnection;
 import org.apache.commons.io.FileUtils;
 
 public class MBConfigurator
 {
+    private static final Logger logger = Logger.getLogger(MBConfigurator.class.getName());
+
     public static final String BASE_URL = "https://api.mercedes-benz.com/configurator/v1";
     public static final String APIKEY;
     public static final Gson GSON;
@@ -350,6 +354,7 @@ public class MBConfigurator
         }
         catch(IOException ex)
         {
+            logger.log(Level.WARNING, ex, () -> "Exception during communication with server");
             throw new RuntimeException(ex);
         }
     }
