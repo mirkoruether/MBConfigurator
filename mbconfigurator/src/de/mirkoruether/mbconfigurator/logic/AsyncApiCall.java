@@ -31,27 +31,25 @@ import de.mirkoruether.mbconfigurator.pojo.Model;
 import de.mirkoruether.mbconfigurator.pojo.VehicleBody;
 import de.mirkoruether.mbconfigurator.pojo.VehicleClass;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import static de.mirkoruether.mbconfigurator.gui.Main.MARKET;
 
 public class AsyncApiCall
 {
     private final String market;
     private final Consumer<Runnable> callbackThread;
+    private final Consumer<Throwable> errorCallback;
 
-    public AsyncApiCall(String market, Consumer<Runnable> callbackThread)
+    public AsyncApiCall(String market, Consumer<Runnable> callbackThread, Consumer<Throwable> errorCallback)
     {
         this.market = market;
         this.callbackThread = callbackThread;
+        this.errorCallback = errorCallback;
     }
 
     public void getClasses(Consumer<VehicleClass[]> callback)
     {
-        new Thread(()
-                ->
-        {
-            VehicleClass[] classes = MBConfigurator.getVehicleClasses(MARKET, null, null);
-            doCallback(callback, classes);
-        }).start();
+        exec(() -> MBConfigurator.getVehicleClasses(MARKET, null, null), callback);
     }
 
     public void getBodies(VehicleClass cl, Consumer<VehicleBody[]> callback)
@@ -59,12 +57,7 @@ public class AsyncApiCall
         String clId = cl == null ? null : cl.getClassId();
         if(clId != null)
         {
-            new Thread(()
-                    ->
-            {
-                VehicleBody[] bodies = MBConfigurator.getVehicleBodies(market, null, clId);
-                doCallback(callback, bodies);
-            }).start();
+            exec(() -> MBConfigurator.getVehicleBodies(market, null, clId), callback);
         }
     }
 
@@ -76,12 +69,7 @@ public class AsyncApiCall
         if(clId != null && !clId.trim().isEmpty()
            && bdyId != null && !bdyId.trim().isEmpty())
         {
-            new Thread(()
-                    ->
-            {
-                Model[] models = MBConfigurator.getModels(MARKET, null, clId, bdyId);
-                doCallback(callback, models);
-            }).start();
+            exec(() -> MBConfigurator.getModels(MARKET, null, clId, bdyId), callback);
         }
     }
 
@@ -89,13 +77,7 @@ public class AsyncApiCall
     {
         if(currentCfg != null && !cs.isEmpty())
         {
-            new Thread(()
-                    ->
-            {
-                ConfigurationAlternative[] alts = MBConfigurator
-                        .getAlternatives(MARKET, currentCfg.getModelId(), currentCfg.getConfigurationId(), cs.toString());
-                doCallback(callback, alts);
-            }).start();
+            exec(() -> MBConfigurator.getAlternatives(MARKET, currentCfg.getModelId(), currentCfg.getConfigurationId(), cs.toString()), callback);
         }
     }
 
@@ -117,16 +99,26 @@ public class AsyncApiCall
 
     public void getConfig(String modelId, String cfgid, Consumer<Configuration> callback)
     {
+        exec(() -> MBConfigurator.getConfiguration(MARKET, modelId, cfgid), callback);
+    }
+
+    private <T> void exec(Supplier<T> func, Consumer<T> callback)
+    {
         new Thread(()
                 ->
         {
-            Configuration conf = MBConfigurator.getConfiguration(MARKET, modelId, cfgid);
-            doCallback(callback, conf);
+            try
+            {
+                T obj = func.get();
+                callbackThread.accept(() -> callback.accept(obj));
+            }
+            catch(Throwable t)
+            {
+                if(errorCallback == null)
+                    t.printStackTrace();
+                else
+                    callbackThread.accept(() -> errorCallback.accept(t));
+            }
         }).start();
-    }
-
-    private <T> void doCallback(Consumer<T> callback, T obj)
-    {
-        callbackThread.accept(() -> callback.accept(obj));
     }
 }

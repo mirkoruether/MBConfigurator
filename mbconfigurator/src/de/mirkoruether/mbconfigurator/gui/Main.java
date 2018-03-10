@@ -35,13 +35,14 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableModelEvent;
+import org.apache.commons.text.WordUtils;
 
 public class Main extends javax.swing.JFrame implements CoolAllroundWindowListener
 {
     public static final String MARKET = "de_DE";
     private static final long serialVersionUID = -2992150966224130100L;
 
-    private final AsyncApiCall api = new AsyncApiCall(MARKET, (r) -> SwingUtilities.invokeLater(r));
+    private final AsyncApiCall api = new AsyncApiCall(MARKET, (r) -> SwingUtilities.invokeLater(r), t -> handleError(t));
 
     private final CoolComboBoxModel<VehicleClass> classComboModel
                                                   = new CoolComboBoxModel<>((c) -> c.getClassName() + " (BR " + c.getClassId() + ")", true);
@@ -408,8 +409,7 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
         }
         catch(Exception ex)
         {
-            JOptionPane.showMessageDialog(this, "Unerwarteter Fehler!");
-            ex.printStackTrace();
+            handleError(ex);
         }
     }//GEN-LAST:event_newConfigurationBtnActionPerformed
 
@@ -446,6 +446,15 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
     {//GEN-HEADEREND:event_clearSearchBtnActionPerformed
         searchTxt.setText("");
     }//GEN-LAST:event_clearSearchBtnActionPerformed
+
+    private void handleError(Throwable t)
+    {
+        String message = "Unerwarteter Fehler!\n"
+                         + t.getClass().getName() + "\n"
+                         + WordUtils.wrap(t.getMessage(), 100, "\n", true);
+        JOptionPane.showMessageDialog(this, message, "Fehler!", JOptionPane.ERROR_MESSAGE);
+        t.printStackTrace();
+    }
 
     private void searchTxtTextChanged(ChangeEvent evt)
     {

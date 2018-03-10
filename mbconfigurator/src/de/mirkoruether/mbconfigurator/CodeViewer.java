@@ -20,13 +20,14 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import org.apache.commons.text.WordUtils;
 import static de.mirkoruether.mbconfigurator.gui.Main.MARKET;
 
 public class CodeViewer extends javax.swing.JFrame implements CoolAllroundWindowListener
 {
     private static final long serialVersionUID = -5415925682414612949L;
 
-    private final AsyncApiCall api = new AsyncApiCall(MARKET, (r) -> SwingUtilities.invokeLater(r));
+    private final AsyncApiCall api = new AsyncApiCall(MARKET, (r) -> SwingUtilities.invokeLater(r), t -> handleError(t));
 
     private final CoolComboBoxModel<VehicleClass> classComboModel
                                                   = new CoolComboBoxModel<>((c) -> c.getClassName() + " (BR " + c.getClassId() + ")", true);
@@ -195,6 +196,15 @@ public class CodeViewer extends javax.swing.JFrame implements CoolAllroundWindow
     {//GEN-HEADEREND:event_clearSearchActionPerformed
         searchTxt.setText("");
     }//GEN-LAST:event_clearSearchActionPerformed
+
+    private void handleError(Throwable t)
+    {
+        String message = "Unerwarteter Fehler!\n"
+                         + t.getClass().getName() + "\n"
+                         + WordUtils.wrap(t.getMessage(), 100, "\n", true);
+        JOptionPane.showMessageDialog(this, message, "Fehler!", JOptionPane.ERROR_MESSAGE);
+        t.printStackTrace();
+    }
 
     public void setModel(Model model)
     {
