@@ -131,6 +131,12 @@ public class LinqList<T> extends ArrayList<T>
         return new ParallelExecution<>(func, exec).get(this);
     }
 
+    public LinqList<T> sortInline(Comparator<? super T> c)
+    {
+        sort(c);
+        return this;
+    }
+
     public LinqList<T> sortCopy(Comparator<? super T> c)
     {
         LinqList<T> result = copy();

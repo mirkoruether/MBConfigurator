@@ -62,7 +62,7 @@ public class MBConfigurator
     public static final String BASE_URL = "https://api.mercedes-benz.com/configurator/v1";
     public static final String APIKEY;
     public static final Gson GSON;
-    private static FolderCache cache;
+    private static final FolderCache cache;
 
     static
     {
@@ -85,6 +85,8 @@ public class MBConfigurator
             CertificateManager certificateManager = new CertificateManager("./sslkeystore.jks", "changeit");
             certificateManager.addCustomCertificate(certificateRessourcePath, "europestarconnect-ceidaimlercom");
             CustomTrustManager.getInstance().register(certificateManager);
+
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> cache.clearFolder()));
         }
         catch(Exception ex)
         {
