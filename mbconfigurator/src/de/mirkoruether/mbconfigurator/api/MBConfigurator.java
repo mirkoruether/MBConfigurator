@@ -40,19 +40,12 @@ import de.mirkoruether.mbconfigurator.pojo.VehicleBody;
 import de.mirkoruether.mbconfigurator.pojo.VehicleClass;
 import de.mirkoruether.mbconfigurator.pojo.VehicleComponent;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Array;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
-import javax.net.ssl.HttpsURLConnection;
 import org.apache.commons.io.FileUtils;
 
 public class MBConfigurator
@@ -62,7 +55,7 @@ public class MBConfigurator
     public static final String BASE_URL = "https://api.mercedes-benz.com/configurator/v1";
     public static final String APIKEY;
     public static final Gson GSON;
-    private static final FolderCache cache;
+    private static final ApiConnection CONNECTION;
 
     static
     {
@@ -79,14 +72,14 @@ public class MBConfigurator
                     .setLenient()
                     .create();
 
-            cache = new FolderCache(new File(System.getProperty("java.io.tmpdir"), "MBConfigurator"));
+            CONNECTION = new ApiConnection(APIKEY, new File(System.getProperty("java.io.tmpdir"), "MBConfigurator"));
 
             String certificateRessourcePath = "/res/cert";
             CertificateManager certificateManager = new CertificateManager("./sslkeystore.jks", "changeit");
             certificateManager.addCustomCertificate(certificateRessourcePath, "europestarconnect-ceidaimlercom");
             CustomTrustManager.getInstance().register(certificateManager);
 
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> cache.clearFolder()));
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> CONNECTION.clearCache()));
         }
         catch(Exception ex)
         {
@@ -96,11 +89,6 @@ public class MBConfigurator
 
     private MBConfigurator()
     {
-    }
-
-    public static FolderCache getCache()
-    {
-        return cache;
     }
 
     public static Market[] getMarkets(String language)
@@ -233,13 +221,13 @@ public class MBConfigurator
 
     public static <T> T fromLink(Links links, String linkKey, Class<T> clazz)
     {
-        String response = getResponse(links.getLink(linkKey));
+        String response = request(links.getLink(linkKey));
         return fromJson(response, clazz);
     }
 
     public static <T> T fromLink(String link, Class<T> clazz)
     {
-        String response = getResponse(link);
+        String response = request(link);
         return fromJson(response, clazz);
     }
 
@@ -280,15 +268,9 @@ public class MBConfigurator
     {
         try
         {
-            BufferedImage c = cache.getImage(url);
-            if(c != null)
-                return c;
-
-            BufferedImage result = ImageIO.read(new URL(url));
-            cache.putImage(url, result);
-            return result;
+            return CONNECTION.getImage(url);
         }
-        catch(IOException ex)
+        catch(Exception ex)
         {
             return null;
         }
@@ -296,7 +278,11 @@ public class MBConfigurator
 
     public static String request(String path, Map<String, String> parameters)
     {
-        String response = getResponse(path, parameters);
+        return returnRequestResult(CONNECTION.getResponse(path, parameters));
+    }
+
+    private static String returnRequestResult(String response)
+    {
         try
         {
             Fault f = GSON.fromJson(response, Fault.class);
@@ -308,65 +294,5 @@ public class MBConfigurator
         }
 
         return response;
-    }
-
-    private static String getResponse(String path, Map<String, String> parameters)
-    {
-        String url = BASE_URL;
-        if(!path.startsWith("/"))
-            url += "/";
-        url += path;
-
-        url += "?";
-        if(parameters != null && !parameters.isEmpty())
-        {
-            for(Map.Entry<String, String> e : parameters.entrySet())
-            {
-                url += e.getKey() + "=" + e.getValue() + "&";
-            }
-        }
-        url += "apikey=" + APIKEY;
-
-        return getResponse(url);
-    }
-
-    private static String getResponse(String urlString)
-    {
-        try
-        {
-            String c = cache.getResponse(urlString);
-            if(c != null)
-                return c;
-
-            HttpsURLConnection con = openAndPrepareConnection(urlString);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            StringBuilder sb = new StringBuilder();
-
-            String line = reader.readLine();
-            while(line != null)
-            {
-                sb.append(line);
-                sb.append("\n");
-                line = reader.readLine();
-            }
-
-            String result = sb.toString();
-            cache.putResponse(urlString, result);
-            return result;
-        }
-        catch(IOException ex)
-        {
-            logger.log(Level.WARNING, ex, () -> "Exception during communication with server");
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private static HttpsURLConnection openAndPrepareConnection(String urlString) throws IOException
-    {
-        URL url = new URL(urlString);
-        HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
-        con.setRequestMethod("GET");
-
-        return con;
     }
 }

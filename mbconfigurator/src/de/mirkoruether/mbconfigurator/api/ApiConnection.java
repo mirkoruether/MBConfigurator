@@ -23,113 +23,74 @@ SOFTWARE.
  */
 package de.mirkoruether.mbconfigurator.api;
 
-import de.mirkoruether.util.LinqList;
-import java.io.BufferedReader;
+import de.mirkoruether.util.InternetUtil;
+import de.mirkoruether.util.UrlBuilder;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.net.ssl.HttpsURLConnection;
 
 public class ApiConnection
 {
     public static final String BASE_URL = "https://api.mercedes-benz.com/configurator/v1";
 
     private static final Logger logger = Logger.getLogger(ApiConnection.class.getName());
-    private final ArrayList<String> apikeys;
+    private final String apikey;
 
     private final FolderCache cache;
 
-    public ApiConnection()
+    public ApiConnection(String apikey, File cacheFolder)
     {
-        this(new ArrayList<>());
+        this.apikey = apikey;
+        this.cache = new FolderCache(cacheFolder);
     }
 
-    public ApiConnection(ArrayList<String> apikeys)
+    public void clearCache()
     {
-        this.apikeys = apikeys;
-        this.cache = new FolderCache(new File(System.getProperty("java.io.tmpdir"), "MBConfigurator"));
+        cache.clearFolder();
     }
 
-    private String getResponse(String path, Map<String, String> query)
+    public String getResponse(String path, Map<String, String> query)
     {
-        String url = BASE_URL;
+        String urlStart = BASE_URL;
         if(!path.startsWith("/"))
-            url += "/";
-        url += path;
+            urlStart += "/";
+        urlStart += path;
 
-        if(query != null && !query.isEmpty())
-        {
-            url += "?";
-            for(Map.Entry<String, String> e : query.entrySet())
-            {
-                url += e.getKey() + "=" + e.getValue() + "&";
-            }
-            url = url.substring(0, url.length() - 1);
-        }
-
-        return getResponse0(url);
+        return getResponse(new UrlBuilder(urlStart, query));
     }
 
-    private String getResponse0(String urlStringWithoutApikey)
+    public String getResponse(String url)
     {
-        String c = cache.getResponse(urlStringWithoutApikey);
+        return getResponse(new UrlBuilder(url));
+    }
+
+    public String getResponse(UrlBuilder req)
+    {
+        req.removeQueryArgs("apikey");
+        req.sortQuery(null);
+
+        String cacheKey = req.toString();
+
+        String c = cache.getResponse(cacheKey);
         if(c != null)
             return c;
 
-        throw new UnsupportedOperationException();
+        req.getQuery().add("apikey=" + apikey);
+
+        String response = InternetUtil.httpsGET(req.toUrl());
+        cache.putResponse(cacheKey, response);
+        return response;
     }
 
-    private String getResponseFromServer(String completeUrl)
+    public BufferedImage getImage(String url)
     {
-        try
-        {
-            URL url = new URL(completeUrl);
-            HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
-            con.setRequestMethod("GET");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            StringBuilder sb = new StringBuilder();
+        BufferedImage c = cache.getImage(url);
+        if(c != null)
+            return c;
 
-            String line = reader.readLine();
-            while(line != null)
-            {
-                sb.append(line);
-                sb.append("\n");
-                line = reader.readLine();
-            }
-
-            return sb.toString();
-        }
-        catch(IOException ex)
-        {
-            logger.log(Level.WARNING, ex, () -> "Exception during communication with server");
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private String removeApiKeyAndSortQuery(String urlString)
-    {
-        String query = urlString.substring(urlString.indexOf('?') + 1,
-                                           urlString.contains("#")
-                                           ? urlString.indexOf('#')
-                                           : urlString.length());
-
-        LinqList<String> queryParts = new LinqList<>(query.split("&"))
-                .where(x -> !x.toLowerCase().startsWith("apikey="))
-                .sortInline(null);
-
-        String result = urlString.substring(0, urlString.indexOf('?'));
-
-        for(int i = 0; i < queryParts.size(); i++)
-        {
-            result += i == 0 ? "?" : "&";
-            result += queryParts.get(i);
-        }
-
+        BufferedImage result = InternetUtil.downloadImage(url);
+        cache.putImage(url, result);
         return result;
     }
 }

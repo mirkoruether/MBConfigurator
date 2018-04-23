@@ -106,6 +106,22 @@ public class LinqList<T> extends ArrayList<T>
         return result;
     }
 
+    public void filter(Predicate<T> func)
+    {
+        for(int i = 0; i < size();)
+        {
+            T obj = get(i);
+            if(func.test(obj))
+            {
+                i++;
+            }
+            else
+            {
+                remove(i);
+            }
+        }
+    }
+
     public <R> LinqList<R> select(Function<T, R> func)
     {
         LinqList<R> result = new LinqList<>(size());

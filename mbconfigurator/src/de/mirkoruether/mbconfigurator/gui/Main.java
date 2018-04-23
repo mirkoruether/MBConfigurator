@@ -96,7 +96,6 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
     @Override
     public void windowClosing(WindowEvent e)
     {
-        MBConfigurator.getCache().saveMaps();
         System.exit(0);
     }
 

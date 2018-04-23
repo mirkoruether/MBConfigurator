@@ -21,45 +21,48 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-package de.mirkoruether.mbconfigurator.api;
+package de.mirkoruether.util;
 
-import de.mirkoruether.util.LinqList;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 
-public class ApiRequest
+public class UrlBuilder
 {
     private String path;
-    private String[] query;
+    private final LinqList<String> query;
 
-    public ApiRequest(String path, Map<String, String> queryMap)
+    public UrlBuilder(String path, Map<String, String> queryMap)
     {
         this.path = path;
         this.query = new LinqList<>(queryMap.entrySet())
-                .select(x -> x.getKey() + "=" + x.getValue())
-                .toArray(String.class);
+                .select(x -> x.getKey() + "=" + x.getValue());
     }
 
-    public ApiRequest(String path, String[] query)
+    public UrlBuilder(String path, String[] query)
     {
         this.path = path;
-        this.query = query;
+        this.query = new LinqList<>(query);
     }
 
-    public ApiRequest(String url)
+    public UrlBuilder(String path, Collection<String> query)
     {
-        this.path = url.substring(0, url.indexOf('?'));
-        this.query = url.substring(url.indexOf('?') + 1, url.length())
-                .split("&");
+        this.path = path;
+        this.query = new LinqList<>(query);
+    }
+
+    public UrlBuilder(String url)
+    {
+        this.path = url.contains("?") ? url.substring(0, url.indexOf('?')) : url;
+        this.query = new LinqList<>(url.substring(url.indexOf('?') + 1, url.length()).split("&"));
     }
 
     public void removeQueryArgs(String key)
     {
         String keyuc = key.toUpperCase() + "=";
-        query = new LinqList<>(query)
-                .where(x -> !x.toUpperCase().startsWith(keyuc))
-                .toArray(String.class);
+        query.filter(x -> !x.toUpperCase().startsWith(keyuc));
     }
 
     public URL toUrl()
@@ -84,26 +87,30 @@ public class ApiRequest
         this.path = path;
     }
 
-    public String[] getQuery()
+    public LinqList<String> getQuery()
     {
         return query;
     }
 
-    public void setQuery(String[] query)
+    public void sortQuery(Comparator<String> c)
     {
-        this.query = query;
+        query.sort(c);
     }
 
     @Override
     public String toString()
     {
-        String queryString = "";
-        for(int i = 0; i < query.length; i++)
+        String result = path;
+        while(result.endsWith("/"))
         {
-            queryString += i == 0 ? "?" : "&";
-            queryString += query[i];
+            result = result.substring(0, result.length() - 1);
         }
-        return queryString;
-    }
 
+        for(int i = 0; i < query.size(); i++)
+        {
+            result += i == 0 ? "?" : "&";
+            result += query.get(i);
+        }
+        return result;
+    }
 }
