@@ -42,7 +42,7 @@ public class InternetUtil
         }
         catch(IOException ex)
         {
-            throw new RuntimeException(ex);
+            throw HTTPCodeException.buildException(ex);
         }
     }
 
@@ -56,7 +56,7 @@ public class InternetUtil
         }
         catch(IOException ex)
         {
-            throw new RuntimeException(ex);
+            throw HTTPCodeException.buildException(ex);
         }
     }
 
