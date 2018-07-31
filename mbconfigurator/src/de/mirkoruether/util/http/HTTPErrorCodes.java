@@ -21,21 +21,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-package de.mirkoruether.util;
+package de.mirkoruether.util.http;
 
-public abstract class HTTPKnownCodeException extends HTTPCodeException
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+@Retention(RetentionPolicy.RUNTIME)
+public @interface HTTPErrorCodes
 {
-    private static final long serialVersionUID = 1883491244724991241L;
-
-    public HTTPKnownCodeException(String url, int code, Throwable inner)
-    {
-        super(url, code, inner);
-    }
-
-    public static int[] errorCodes(Class<? extends HTTPKnownCodeException> cl)
-    {
-        HTTPErrorCodes annotation = cl.getAnnotation(HTTPErrorCodes.class);
-        int[] codes = annotation == null ? null : annotation.value();
-        return codes == null ? new int[0] : codes;
-    }
+    int[] value();
 }

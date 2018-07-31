@@ -21,13 +21,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-package de.mirkoruether.util;
+package de.mirkoruether.util.http;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-@Retention(RetentionPolicy.RUNTIME)
-public @interface HTTPErrorCodes
+@HTTPErrorCodes(
+        {
+            429
+        })
+public class HTTPTooManyRequests extends HTTPKnownCodeException
 {
-    int[] value();
+    private static final long serialVersionUID = -6299872112037932610L;
+
+    public HTTPTooManyRequests(String url, int code, Throwable inner)
+    {
+        super(url, code, inner);
+    }
 }

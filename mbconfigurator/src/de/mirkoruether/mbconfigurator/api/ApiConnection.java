@@ -23,8 +23,8 @@ SOFTWARE.
  */
 package de.mirkoruether.mbconfigurator.api;
 
-import de.mirkoruether.util.InternetUtil;
-import de.mirkoruether.util.UrlBuilder;
+import de.mirkoruether.util.http.InternetUtil;
+import de.mirkoruether.util.http.UrlBuilder;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Map;

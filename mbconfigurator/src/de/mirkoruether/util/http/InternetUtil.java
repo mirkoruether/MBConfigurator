@@ -21,9 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-package de.mirkoruether.util;
+package de.mirkoruether.util.http;
 
-import de.mirkoruether.util.HTTPCodeException;
+import de.mirkoruether.util.http.HTTPCodeException;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
