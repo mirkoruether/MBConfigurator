@@ -23,6 +23,7 @@ SOFTWARE.
  */
 package de.mirkoruether.util;
 
+import de.mirkoruether.util.LinqList;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;

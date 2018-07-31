@@ -24,10 +24,28 @@ SOFTWARE.
 package de.mirkoruether.util;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
 
 public class HTTPCodeException extends RuntimeException
 {
     private static final long serialVersionUID = -4967280586594680282L;
+
+    private static HashMap<Integer, Constructor<? extends HTTPKnownCodeException>> knownErrorCodes;
+
+    static
+    {
+        try
+        {
+            knownErrorCodes = new HashMap<>();
+            addKnownErrorCodeClass(HTTPTooManyRequests.class);
+        }
+        catch(NoSuchMethodException ex)
+        {
+            throw new ExceptionInInitializerError(ex);
+        }
+    }
+
     private int code;
     private String url;
 
@@ -68,6 +86,12 @@ public class HTTPCodeException extends RuntimeException
                 String[] parts = message.split(":", 3);
                 int code = Integer.parseInt(parts[1].trim().substring(0, 3));
                 String url = parts[2].trim();
+
+                if(knownErrorCodes.containsKey(code))
+                {
+                    return knownErrorCodes.get(code).newInstance(url, code, ex);
+                }
+
                 return new HTTPCodeException(url, code, ex);
             }
             catch(Exception ex2)
@@ -78,6 +102,16 @@ public class HTTPCodeException extends RuntimeException
         else
         {
             return new RuntimeException(ex);
+        }
+    }
+
+    private static void addKnownErrorCodeClass(Class<? extends HTTPKnownCodeException> cl) throws NoSuchMethodException
+    {
+        Constructor<? extends HTTPKnownCodeException> constr = cl.getConstructor(String.class, Integer.TYPE, Throwable.class);
+
+        for(int errorCode : HTTPKnownCodeException.errorCodes(cl))
+        {
+            knownErrorCodes.put(errorCode, constr);
         }
     }
 }
