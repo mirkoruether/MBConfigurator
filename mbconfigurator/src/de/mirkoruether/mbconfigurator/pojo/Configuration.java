@@ -30,7 +30,7 @@ import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class Configuration implements Serializable
+public class Configuration implements Serializable, HasLinks
 {
     @SerializedName("marketId")
     @Expose
@@ -265,6 +265,7 @@ public class Configuration implements Serializable
         return this;
     }
 
+    @Override
     public Links getLinks()
     {
         return links;

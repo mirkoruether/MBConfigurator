@@ -36,7 +36,7 @@ import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class Selectables implements Serializable
+public class Selectables implements Serializable, HasLinks
 {
     @SerializedName("vehicleComponents")
     @Expose
@@ -103,6 +103,7 @@ public class Selectables implements Serializable
         return this;
     }
 
+    @Override
     public Links getLinks()
     {
         return links;

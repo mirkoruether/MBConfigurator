@@ -29,7 +29,7 @@ import java.io.Serializable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class VehicleBody implements Serializable
+public class VehicleBody implements Serializable, HasLinks
 {
     @SerializedName("bodyId")
     @Expose
@@ -96,6 +96,7 @@ public class VehicleBody implements Serializable
         return this;
     }
 
+    @Override
     public Links getLinks()
     {
         return links;

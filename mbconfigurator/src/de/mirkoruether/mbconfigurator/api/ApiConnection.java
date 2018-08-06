@@ -76,7 +76,7 @@ public class ApiConnection
         if(c != null)
             return c;
 
-        req.getQuery().add("apikey=" + apikey);
+        req.getQuery().add(new UrlBuilder.QueryEntry("apikey", apikey));
 
         String response = InternetUtil.httpsGET(req.toUrl());
         cache.putResponse(cacheKey, response);

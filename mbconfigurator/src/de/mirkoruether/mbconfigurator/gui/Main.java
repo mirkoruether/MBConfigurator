@@ -404,7 +404,7 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
             if(!saveManager.newElement())
                 return;
 
-            setCurrentConfig(MBConfigurator.getInitialConfiguration(MARKET, selectedModel.getModelId()));
+            setCurrentConfig(MBConfigurator.getInitialConfiguration(selectedModel, MARKET));
         }
         catch(Exception ex)
         {
@@ -499,7 +499,7 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
                                 ()
                                 ->
                         {
-                            Map<String, String> links = MBConfigurator.getComponentImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId(), comp);
+                            Map<String, String> links = MBConfigurator.getComponentImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId(), comp.getCode());
                             return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
                         },
                                 () -> componentsTable.getSelectedRow() > 0
@@ -527,7 +527,9 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
     public void setCurrentConfig(Configuration config)
     {
         selectables.clear();
-        Selectables select = MBConfigurator.getSelectibles(MARKET, config.getModelId(), config.getConfigurationId());
+
+        Selectables select = MBConfigurator.getSelectibles(config);
+
         selectables.addAllWhere(select.getVehicleComponents(),
                                 c -> !cfg.getIgnoredCodeTypes().contains(c.getCodeType()));
         selectables.sort(null);
@@ -539,7 +541,7 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
                             ()
                             ->
                     {
-                        Map<String, String> links = MBConfigurator.getVehicleImageLinks(MARKET, currentConfig.getModelId(), currentConfig.getConfigurationId());
+                        Map<String, String> links = MBConfigurator.getVehicleImageLinks(currentConfig);
                         return links.isEmpty() ? null : MBConfigurator.downloadImage(links.values().iterator().next());
                     },
                             () -> currentConfig != null && id.equals(currentConfig.getConfigurationId()), 5);

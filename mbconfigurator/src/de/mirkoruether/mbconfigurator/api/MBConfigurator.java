@@ -31,6 +31,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import de.mirkoruether.mbconfigurator.pojo.Configuration;
 import de.mirkoruether.mbconfigurator.pojo.ConfigurationAlternative;
+import de.mirkoruether.mbconfigurator.pojo.HasLinks;
 import de.mirkoruether.mbconfigurator.pojo.IncludedComponents;
 import de.mirkoruether.mbconfigurator.pojo.Links;
 import de.mirkoruether.mbconfigurator.pojo.Market;
@@ -38,13 +39,13 @@ import de.mirkoruether.mbconfigurator.pojo.Model;
 import de.mirkoruether.mbconfigurator.pojo.Selectables;
 import de.mirkoruether.mbconfigurator.pojo.VehicleBody;
 import de.mirkoruether.mbconfigurator.pojo.VehicleClass;
-import de.mirkoruether.mbconfigurator.pojo.VehicleComponent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 
@@ -122,7 +123,13 @@ public class MBConfigurator
         return fromJson(response, Model[].class);
     }
 
-    public static Configuration getInitialConfiguration(String market, String modelId)
+    public static Configuration getInitialConfiguration(Model model, String market)
+    {
+        return fromLinkIfPresent(model, "configurations", Configuration.class, ()
+                                 -> getInitialConfigurationManually(market, model.getModelId()));
+    }
+
+    public static Configuration getInitialConfigurationManually(String market, String modelId)
     {
         String response = request("markets/" + market
                                   + "/models/" + modelId
@@ -138,7 +145,13 @@ public class MBConfigurator
         return fromJson(response, Configuration.class);
     }
 
-    public static Selectables getSelectibles(String market, String modelId, String configurationId)
+    public static Selectables getSelectibles(Configuration config)
+    {
+        return fromLinkIfPresent(config, "selectables", Selectables.class, ()
+                                 -> getSelectiblesManually(config.getMarketId(), config.getModelId(), config.getConfigurationId()));
+    }
+
+    public static Selectables getSelectiblesManually(String market, String modelId, String configurationId)
     {
         String response = request("markets/" + market
                                   + "/models/" + modelId
@@ -147,7 +160,17 @@ public class MBConfigurator
         return fromJson(response, Selectables.class);
     }
 
-    public static Map<String, String> getVehicleImageLinks(String market, String modelId, String configurationId)
+    public static Map<String, String> getVehicleImageLinks(Configuration config)
+    {
+        final String linkKey = "image";
+        if(isLinkPresent(config, linkKey))
+        {
+            return getImageLinks(requestDirect(config.getLinks().getLink(linkKey)));
+        }
+        return getVehicleImageLinksManually(config.getMarketId(), config.getModelId(), config.getConfigurationId());
+    }
+
+    public static Map<String, String> getVehicleImageLinksManually(String market, String modelId, String configurationId)
     {
         String response = request("markets/" + market + "/models/" + modelId
                                   + "/configurations/" + configurationId
@@ -165,11 +188,11 @@ public class MBConfigurator
         return fromJson(response, ConfigurationAlternative[].class);
     }
 
-    public static Map<String, String> getComponentImageLinks(String market, String modelId, String configurationId, VehicleComponent comp)
+    public static Map<String, String> getComponentImageLinks(String market, String modelId, String configurationId, String compCode)
     {
         String response = request("markets/" + market + "/models/" + modelId
                                   + "/configurations/" + configurationId
-                                  + "/images/components/equipments/" + comp.getCode());
+                                  + "/images/components/equipments/" + compCode);
 
         return getImageLinks(response);
     }
@@ -219,15 +242,33 @@ public class MBConfigurator
         }
     }
 
+    public static boolean isLinkPresent(HasLinks obj, String linkKey)
+    {
+        return obj != null && obj.getLinks() != null && obj.getLinks().hasLink(linkKey);
+    }
+
+    public static <T> T fromLinkIfPresent(HasLinks obj, String linkKey, Class<T> clazz, Supplier<T> backup)
+    {
+        if(isLinkPresent(obj, linkKey))
+        {
+            return fromLink(obj, linkKey, clazz);
+        }
+        return backup.get();
+    }
+
+    public static <T> T fromLink(HasLinks obj, String linkKey, Class<T> clazz)
+    {
+        return fromLink(obj.getLinks(), linkKey, clazz);
+    }
+
     public static <T> T fromLink(Links links, String linkKey, Class<T> clazz)
     {
-        String response = request(links.getLink(linkKey));
-        return fromJson(response, clazz);
+        return fromLink(links.getLink(linkKey), clazz);
     }
 
     public static <T> T fromLink(String link, Class<T> clazz)
     {
-        String response = request(link);
+        String response = requestDirect(link);
         return fromJson(response, clazz);
     }
 
@@ -243,6 +284,11 @@ public class MBConfigurator
         {
             return GSON.fromJson(response, clazz);
         }
+    }
+
+    public static String requestDirect(String url)
+    {
+        return returnRequestResult(CONNECTION.getResponse(url));
     }
 
     public static String request(String path, String... parameters)

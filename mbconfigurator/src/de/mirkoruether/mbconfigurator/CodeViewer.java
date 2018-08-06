@@ -208,8 +208,8 @@ public class CodeViewer extends javax.swing.JFrame implements CoolAllroundWindow
 
     public void setModel(Model model)
     {
-        Configuration conf = MBConfigurator.getInitialConfiguration(MARKET, model.getModelId());
-        Selectables select = MBConfigurator.getSelectibles(MARKET, model.getModelId(), conf.getConfigurationId());
+        Configuration conf = MBConfigurator.getInitialConfiguration(model, MARKET);
+        Selectables select = MBConfigurator.getSelectibles(conf);
         setComponets(model.getName(), select.getVehicleComponents());
     }
 

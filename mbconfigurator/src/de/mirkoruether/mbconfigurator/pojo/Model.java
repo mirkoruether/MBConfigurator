@@ -29,7 +29,7 @@ import java.io.Serializable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class Model implements Serializable
+public class Model implements Serializable, HasLinks
 {
     @SerializedName("modelId")
     @Expose
@@ -243,6 +243,7 @@ public class Model implements Serializable
         return this;
     }
 
+    @Override
     public Links getLinks()
     {
         return links;

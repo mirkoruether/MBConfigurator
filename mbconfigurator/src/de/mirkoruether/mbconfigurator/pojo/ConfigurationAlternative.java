@@ -30,7 +30,7 @@ import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class ConfigurationAlternative implements Serializable
+public class ConfigurationAlternative implements Serializable, HasLinks
 {
     @SerializedName("marketId")
     @Expose
@@ -78,8 +78,8 @@ public class ConfigurationAlternative implements Serializable
      * @param configurationId
      */
     public ConfigurationAlternative(String marketId, String modelId, String configurationId,
-                                     List<VehicleComponent> addedComponents, List<VehicleComponent> removedComponents,
-                                     List<VehicleComponent> updatedComponents, PriceInformation priceInformation, Links links)
+                                    List<VehicleComponent> addedComponents, List<VehicleComponent> removedComponents,
+                                    List<VehicleComponent> updatedComponents, PriceInformation priceInformation, Links links)
     {
         super();
         this.marketId = marketId;
@@ -204,6 +204,7 @@ public class ConfigurationAlternative implements Serializable
         return this;
     }
 
+    @Override
     public Links getLinks()
     {
         return links;

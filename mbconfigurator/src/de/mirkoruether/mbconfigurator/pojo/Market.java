@@ -30,7 +30,7 @@ import java.io.Serializable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class Market implements Serializable
+public class Market implements Serializable, HasLinks
 {
     private final static long serialVersionUID = -6297208339222734688L;
 
@@ -119,6 +119,7 @@ public class Market implements Serializable
         return this;
     }
 
+    @Override
     public Links getLinks()
     {
         return links;

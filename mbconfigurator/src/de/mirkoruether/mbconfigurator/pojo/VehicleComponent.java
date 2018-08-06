@@ -29,7 +29,7 @@ import java.io.Serializable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class VehicleComponent implements Serializable, Comparable<VehicleComponent>
+public class VehicleComponent implements Serializable, Comparable<VehicleComponent>, HasLinks
 {
     @SerializedName("id")
     @Expose
@@ -361,6 +361,7 @@ public class VehicleComponent implements Serializable, Comparable<VehicleCompone
         return this;
     }
 
+    @Override
     public Links getLinks()
     {
         return links;
