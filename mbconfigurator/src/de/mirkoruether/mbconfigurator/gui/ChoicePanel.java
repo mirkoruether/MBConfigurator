@@ -33,9 +33,9 @@ public class ChoicePanel extends javax.swing.JPanel
     private static final long serialVersionUID = -6570044065922466815L;
 
     private final CoolTableModel<Entry> tableModel = new CoolTableModel<Entry>()
-            .addColumn("Aktion", x -> x.getType(), String.class, false, 70)
-            .addColumn("Code", x -> x.getCode(), String.class, false, 50)
-            .addColumn("Name", x -> x.getName(), String.class, false, 300);
+            .addColumn("Aktion", Entry :: getType, String.class, false, 70)
+            .addColumn("Code", Entry :: getCode, String.class, false, 50)
+            .addColumn("Name", Entry :: getName, String.class, false, 300);
 
     private final Runnable callback;
 

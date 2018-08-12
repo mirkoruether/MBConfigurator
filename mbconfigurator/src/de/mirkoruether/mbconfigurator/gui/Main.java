@@ -42,26 +42,25 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
     public static final String MARKET = "de_DE";
     private static final long serialVersionUID = -2992150966224130100L;
 
-    private final AsyncApiCall api = new AsyncApiCall(MARKET, (r) -> SwingUtilities.invokeLater(r), t -> handleError(t));
+    private final AsyncApiCall api = new AsyncApiCall(MARKET, SwingUtilities :: invokeLater, this :: handleError);
 
     private final CoolComboBoxModel<VehicleClass> classComboModel
                                                   = new CoolComboBoxModel<>((c) -> c.getClassName() + " (BR " + c.getClassId() + ")", true);
 
     private final CoolComboBoxModel<VehicleBody> bodyComboModel
-                                                 = new CoolComboBoxModel<>((b) -> b.getBodyName(), true);
+                                                 = new CoolComboBoxModel<>(VehicleBody :: getBodyName, true);
 
     private final CoolComboBoxModel<Model> modelComboModel
                                            = new CoolComboBoxModel<>((m) -> m.getName() + " (Baumuster " + m.getBaumuster() + ")", true);
 
     private final CoolTableModel<VehicleComponent> componentsTableModel
                                                    = new CoolTableModel<VehicleComponent>()
-                    .addColumn("?", c -> c.isSelected(), Boolean.class, true, 20)
-                    .addColumn("Code", c -> c.getId(), String.class, false, 50)
+                    .addColumn("?", VehicleComponent :: isSelected, Boolean.class, true, 20)
+                    .addColumn("Code", VehicleComponent :: getId, String.class, false, 50)
                     .addColumn("Kategorie", c -> c.getCategory() == null ? "-" : c.getCategory().getCategoryName(), String.class, false, 100)
-                    .addColumn("Bezeichnung", c -> c.getName(), String.class, false, 200);
+                    .addColumn("Bezeichnung", VehicleComponent :: getName, String.class, false, 200);
 
-    private final SaveManager saveManager = new SaveManager((f) -> saveConfiguration(f),
-                                                            () -> saveConfigurationAs(),
+    private final SaveManager saveManager = new SaveManager(this :: saveConfiguration, this :: saveConfigurationAs,
                                                             () -> SaveManager.DialogResult.Discard);
 
     private Configuration currentConfig = null;
@@ -75,7 +74,7 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
 
         applyAllroundWindowListenerTo(this);
 
-        GeneralGuiUtils.addChangeListener(searchTxt, evt -> searchTxtTextChanged(evt));
+        GeneralGuiUtils.addChangeListener(searchTxt, this :: searchTxtTextChanged);
 
         classCombo.setModel(classComboModel);
         bodyCombo.setModel(bodyComboModel);
@@ -83,8 +82,8 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
 
         componentsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         componentsTableModel.applyTo(componentsTable);
-        componentsTableModel.addTableModelListener(evt -> tableChanged(evt));
-        componentsTable.getSelectionModel().addListSelectionListener((evt) -> selectionChanged(evt));
+        componentsTableModel.addTableModelListener(this :: tableChanged);
+        componentsTable.getSelectionModel().addListSelectionListener(this :: selectionChanged);
 
         classCombo.setSelectedItem(null);
 
@@ -435,10 +434,10 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
 
     private void refreshBtnActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_refreshBtnActionPerformed
     {//GEN-HEADEREND:event_refreshBtnActionPerformed
-        ChangeSet cs = ChangeSet.build(new LinqList<>(currentConfig.getVehicleComponents()).select(c -> c.getId()),
-                                       selectables.where(c -> c.isSelected()).select(c -> c.getId()));
+        ChangeSet cs = ChangeSet.build(new LinqList<>(currentConfig.getVehicleComponents()).select(VehicleComponent :: getId),
+                                       selectables.where(VehicleComponent :: isSelected).select(VehicleComponent :: getId));
 
-        api.getAlternatives(currentConfig, cs, alts -> chooseAlternative(alts));
+        api.getAlternatives(currentConfig, cs, this :: chooseAlternative);
     }//GEN-LAST:event_refreshBtnActionPerformed
 
     private void clearSearchBtnActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_clearSearchBtnActionPerformed
@@ -510,7 +509,7 @@ public class Main extends javax.swing.JFrame implements CoolAllroundWindowListen
     private void chooseAlternative(ConfigurationAlternative[] alts)
     {
         final Consumer<ConfigurationAlternative> callback = a
-                -> api.getConfig(a, c -> setCurrentConfig(c));
+                -> api.getConfig(a, this :: setCurrentConfig);
 
         if(dialogNeverRadio.isSelected() || (dialogIfChangesRadio.isSelected() && alts.length == 1)
            || (alts[0].getAddedComponents().isEmpty() && alts[0].getUpdatedComponents().isEmpty() && alts[0].getRemovedComponents().isEmpty()))

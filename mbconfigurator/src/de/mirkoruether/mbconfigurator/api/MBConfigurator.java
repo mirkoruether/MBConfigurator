@@ -80,7 +80,7 @@ public class MBConfigurator
             certificateManager.addCustomCertificate(certificateRessourcePath, "europestarconnect-ceidaimlercom");
             CustomTrustManager.getInstance().register(certificateManager);
 
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> CONNECTION.clearCache()));
+            Runtime.getRuntime().addShutdownHook(new Thread(CONNECTION :: clearCache));
         }
         catch(Exception ex)
         {

@@ -60,7 +60,7 @@ public class CsvSerializer<T>
 
     private String buildHeadLine()
     {
-        return buildCsvLine((f) -> f.getName());
+        return buildCsvLine(Field :: getName);
     }
 
     private String buildEntryLine(T entry)

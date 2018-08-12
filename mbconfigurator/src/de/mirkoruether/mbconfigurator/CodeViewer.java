@@ -27,7 +27,7 @@ public class CodeViewer extends javax.swing.JFrame implements CoolAllroundWindow
 {
     private static final long serialVersionUID = -5415925682414612949L;
 
-    private final AsyncApiCall api = new AsyncApiCall(MARKET, (r) -> SwingUtilities.invokeLater(r), t -> handleError(t));
+    private final AsyncApiCall api = new AsyncApiCall(MARKET, SwingUtilities :: invokeLater, this :: handleError);
 
     private final CoolComboBoxModel<VehicleClass> classComboModel
                                                   = new CoolComboBoxModel<>((c) -> c.getClassName() + " (BR " + c.getClassId() + ")", true);
@@ -49,7 +49,7 @@ public class CodeViewer extends javax.swing.JFrame implements CoolAllroundWindow
 
         applyAllroundWindowListenerTo(this);
 
-        GeneralGuiUtils.addChangeListener(searchTxt, evt -> searchTxtTextChanged(evt));
+        GeneralGuiUtils.addChangeListener(searchTxt, this :: searchTxtTextChanged);
 
         classCombo.setModel(classComboModel);
         bodyCombo.setModel(bodyComboModel);

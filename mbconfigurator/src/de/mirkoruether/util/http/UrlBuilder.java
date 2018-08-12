@@ -51,14 +51,14 @@ public class UrlBuilder
     public UrlBuilder(String path, Collection<String> query)
     {
         this.path = path;
-        this.query = new LinqList<>(query).select(s -> generateEntry(s));
+        this.query = new LinqList<>(query).select(UrlBuilder :: generateEntry);
     }
 
     public UrlBuilder(String url)
     {
         this.path = url.contains("?") ? url.substring(0, url.indexOf('?')) : url;
         this.query = new LinqList<>(url.substring(url.indexOf('?') + 1, url.length()).split("&"))
-                .select(s -> generateEntry(s));
+                .select(UrlBuilder :: generateEntry);
     }
 
     public void removeQueryArgs(String key)
