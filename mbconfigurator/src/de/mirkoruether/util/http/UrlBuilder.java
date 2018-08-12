@@ -130,7 +130,7 @@ public class UrlBuilder
                 .replaceAll("\\<", "%3C")
                 .replaceAll("\\>", "%3E")
                 .replaceAll("\\#", "%23")
-                .replaceAll("\\%", "%25")
+                //.replaceAll("\\%", "%25")
                 .replaceAll("\\{", "%7B")
                 .replaceAll("\\}", "%7D")
                 .replaceAll("\\|", "%7C")
