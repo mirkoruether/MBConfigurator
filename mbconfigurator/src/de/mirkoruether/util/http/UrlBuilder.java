@@ -102,7 +102,7 @@ public class UrlBuilder
     @Override
     public String toString()
     {
-        String result = escapeCharsExceptFirstPart(path);
+        String result = escapeCharsInPath(path);
         while(result.endsWith("/"))
         {
             result = result.substring(0, result.length() - 1);
@@ -116,36 +116,10 @@ public class UrlBuilder
         return result;
     }
 
-    private static String escapeChars(String s)
+    private static String escapeCharsInPath(String s)
     {
-        return escapeCharsExceptFirstPart(s)
-                .replaceAll("\\:", "%3A")
-                .replaceAll("/", "%2F");
-    }
-
-    private static String escapeCharsExceptFirstPart(String s)
-    {
-        return s
-                .replaceAll(" ", "%20")
-                .replaceAll("\\<", "%3C")
-                .replaceAll("\\>", "%3E")
-                .replaceAll("\\#", "%23")
-                //.replaceAll("\\%", "%25")
-                .replaceAll("\\{", "%7B")
-                .replaceAll("\\}", "%7D")
-                .replaceAll("\\|", "%7C")
-                .replaceAll("\\\\", "%5C")
-                .replaceAll("\\^", "%5E")
-                .replaceAll("\\~", "%7E")
-                .replaceAll("\\[", "%5B")
-                .replaceAll("\\]", "%5D")
-                .replaceAll("\\`", "%60")
-                .replaceAll("\\;", "%3B")
-                .replaceAll("\\?", "%3F")
-                .replaceAll("\\@", "%40")
-                .replaceAll("\\=", "%3D")
-                .replaceAll("\\&", "%26")
-                .replaceAll("\\$", "%24");
+        return s.replaceAll("\\#", "%23")
+                .replaceAll("\\?", "%3F");
     }
 
     private static QueryEntry generateEntry(String queryPart)
@@ -197,7 +171,14 @@ public class UrlBuilder
         @Override
         public String toString()
         {
-            return escapeChars(key) + "=" + escapeChars(value);
+            return escapeCharsQuery(key) + "=" + escapeCharsQuery(value);
+        }
+
+        private static String escapeCharsQuery(String s)
+        {
+            return s.replaceAll("\\#", "%23")
+                    .replaceAll("\\=", "%3D")
+                    .replaceAll("\\&", "%26");
         }
     }
 }
